@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Business Audit Report - {{ business_name }}</title>
+    <style>
+        @page {
+            margin: 0;
+            size: A4;
+        }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            color: #F1F5F9;
+            background-color: #0A0A0F;
+            margin: 0;
+            padding: 0;
+        }
+        .page {
+            width: 210mm;
+            height: 297mm;
+            padding: 20mm;
+            box-sizing: border-box;
+            page-break-after: always;
+            position: relative;
+        }
+        h1, h2, h3 {
+            font-family: 'Syne', sans-serif;
+            margin: 0;
+        }
+        .accent-amber { color: #F59E0B; }
+        .accent-indigo { color: #6366F1; }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1E1E2E;
+            padding-bottom: 10mm;
+            margin-bottom: 10mm;
+        }
+        .logo { font-size: 24px; font-weight: bold; }
+        
+        .hero-stats {
+            background: #12121A;
+            border-radius: 12px;
+            padding: 10mm;
+            margin-bottom: 10mm;
+            border: 1px solid #1E1E2E;
+        }
+        .loss-amount {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 5mm 0;
+        }
+        
+        .card {
+            background: #12121A;
+            border: 1px solid #1E1E2E;
+            border-radius: 8px;
+            padding: 6mm;
+            margin-bottom: 6mm;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 3mm;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10mm 0;
+        }
+        th { text-align: left; color: #64748B; font-weight: normal; padding: 3mm; border-bottom: 1px solid #1E1E2E; }
+        td { padding: 3mm; border-bottom: 1px solid #1E1E2E; }
+        
+        .footer {
+            position: absolute;
+            bottom: 20mm;
+            left: 20mm;
+            right: 20mm;
+            font-size: 10px;
+            color: #64748B;
+            border-top: 1px solid #1E1E2E;
+            padding-top: 5mm;
+        }
+        
+        .timeline {
+            border-left: 2px solid #F59E0B;
+            margin-left: 5mm;
+            padding-left: 10mm;
+        }
+        .timeline-item {
+            margin-bottom: 8mm;
+            position: relative;
+        }
+        .timeline-item::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: #F59E0B;
+            border-radius: 50%;
+            position: absolute;
+            left: -17px;
+            top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Page 1: Revenue Leaks -->
+    <div class="page">
+        <header>
+            <div class="logo">LEAD <span class="accent-amber">REPORTER</span></div>
+            <div style="text-align: right;">
+                <div style="font-size: 12px; color: #64748B;">AUDIT FOR</div>
+                <div style="font-weight: bold;">{{ business_name }}</div>
+            </div>
+        </header>
+
+        <div class="hero-stats">
+            <h3 class="accent-indigo">REVENUE LEAK ESTIMATE</h3>
+            <div class="loss-amount accent-amber">{{ page1.estimated_monthly_loss }}<span style="font-size: 20px;">/month</span></div>
+            <p style="color: #94A3B8;">{{ page1.loss_reasoning }}</p>
+            <div style="margin-top: 5mm;">
+                <span style="background: #1E1E2E; padding: 2mm 4mm; border-radius: 20px; font-size: 14px;">
+                    OPPORTUNITY SCORE: <span class="accent-amber" style="font-weight: bold;">{{ page1.opportunity_score }}</span>
+                </span>
+            </div>
+        </div>
+
+        <h2 style="margin-bottom: 6mm;">Top 3 Conversion Blockers</h2>
+        {% for issue in page1.issues %}
+        <div class="card">
+            <div class="card-title"><span class="accent-amber">0{{ loop.index }}.</span> {{ issue.title }}</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; font-size: 14px;">
+                <div>
+                    <div style="color: #64748B; font-size: 10px; margin-bottom: 1mm;">IMPACT</div>
+                    <div>{{ issue.impact }}</div>
+                </div>
+                <div>
+                    <div style="color: #64748B; font-size: 10px; margin-bottom: 1mm;">FIX</div>
+                    <div>{{ issue.fix }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="footer">
+            Confidential Business Audit | Generated on {{ generated_at }}
+        </div>
+    </div>
+
+    <!-- Page 2: Action Plan -->
+    <div class="page">
+        <h2 class="accent-amber" style="margin-bottom: 10mm;">3-Month Execution Roadmap</h2>
+        
+        <h3 style="margin-bottom: 5mm;">Month 1: Foundation & Low Hanging Fruit</h3>
+        <div class="timeline">
+            {% for item in page2.month1 %}
+            <div class="timeline-item">
+                <div style="font-weight: bold;">Week {{ item.week }}: {{ item.task }}</div>
+                <div style="font-size: 14px; color: #94A3B8;">{{ item.how }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <h3 style="margin-bottom: 5mm; margin-top: 10mm;">Month 2: Scaling & Optimization</h3>
+        <div class="timeline">
+            {% for item in page2.month2 %}
+            <div class="timeline-item">
+                <div style="font-weight: bold;">Week {{ item.week }}: {{ item.task }}</div>
+                <div style="font-size: 14px; color: #94A3B8;">{{ item.how }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="footer">
+            Lead Reporter | Professional Execution Plan
+        </div>
+    </div>
+
+    <!-- Page 3: Closing Kit -->
+    <div class="page">
+        <h2 class="accent-indigo" style="margin-bottom: 10mm;">The Closing Kit</h2>
+        <p style="margin-bottom: 10mm; color: #94A3B8;">Use these high-conversion scripts to start the conversation with {{ business_name }}. These are designed to be personal and low-friction.</p>
+
+        <div class="card" style="border-left: 4px solid #10B981;">
+            <div class="card-title">WhatsApp Message</div>
+            <div style="background: #0A0A0F; padding: 4mm; border-radius: 4px; font-family: monospace; font-size: 14px; white-space: pre-wrap;">{{ page3.whatsapp_script }}</div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid #6366F1;">
+            <div class="card-title">Email: {{ page3.email_subject }}</div>
+            <div style="background: #0A0A0F; padding: 4mm; border-radius: 4px; font-family: monospace; font-size: 14px; white-space: pre-wrap;">{{ page3.email_body }}</div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid #F59E0B;">
+            <div class="card-title">30-Second Call Opener</div>
+            <div style="font-style: italic; color: #94A3B8;">{{ page3.call_opener }}</div>
+        </div>
+
+        <div class="footer">
+            Lead Reporter | Your Secret Weapon
+        </div>
+    </div>
+</body>
+</html>

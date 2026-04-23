@@ -1,0 +1,37 @@
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import List
+
+class Settings(BaseSettings):
+    # Database
+    DATABASE_URL: str = "postgresql+asyncpg://user:pass@neon.host/dbname"
+
+    # Auth
+    JWT_SECRET: str = "your-256-bit-secret-string"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRY_HOURS: int = 24
+
+    # AI
+    OPENROUTER_API_KEY: str = ""
+    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
+
+    # Stripe
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    STRIPE_PRICE_STARTER_INR: str = ""
+    STRIPE_PRICE_GROWTH_INR: str = ""
+    STRIPE_PRICE_PRO_INR: str = ""
+    STRIPE_PRICE_STARTER_USD: str = ""
+    STRIPE_PRICE_GROWTH_USD: str = ""
+    STRIPE_PRICE_PRO_USD: str = ""
+
+    # Redis
+    REDIS_URL: str = "redis://localhost:6379/0"
+
+    # App
+    ENVIRONMENT: str = "development"
+    CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    LOG_LEVEL: str = "INFO"
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+settings = Settings()
