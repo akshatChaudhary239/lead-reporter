@@ -17,9 +17,14 @@ class ReportInput(BaseModel):
     competitors: List[CompetitorSummary]
 
 class ReportJSON(BaseModel):
-    page1: Dict[str, Any]
-    page2: Dict[str, Any]
-    page3: Dict[str, Any]
+    # Flexible container for the enriched schema
+    summary: Dict[str, Any]
+    scores: Dict[str, Any]
+    visuals: Dict[str, Any]
+    prioritized_actions: List[Dict[str, Any]]
+    competitor_analysis: List[Dict[str, Any]]
+    roadmap: Dict[str, Any]
+    outreach: Dict[str, Any]
 
 MODEL_CHAIN = [
     {
@@ -35,24 +40,24 @@ MODEL_CHAIN = [
 ]
 
 SYSTEM_PROMPT = """
-You are a senior business growth consultant and conversion rate optimization specialist with 15+ years of experience auditing businesses.
-Your ONLY job is to identify revenue leaks and provide sharp, specific, actionable fixes.
+You are a world-class business growth consultant, conversion rate optimization (CRO) expert, and strategic architect. 
+Your goal is to transform raw business data into a high-conviction, data-backed, visually rich business intelligence report that helps agencies CLOSE DEALS.
 
 BEHAVIORAL RULES:
-- Every insight must be specific to THIS business, not generic advice.
-- Quantify everything: use percentages, time estimates, revenue figures.
-- Be slightly critical but constructive — not polite, not harsh.
-- If data is limited, make intelligent inferences and state them clearly.
-- Output must feel like a $2,000 professional audit, not a chatbot response.
+1. NO GENERIC ADVICE. Every insight must be anchored to THIS specific business's data or industry benchmarks.
+2. DYNAMIC SCORING: Metrics must be weighted logic, not hardcoded. 
+3. REVENUE FOCUS: Every problem must be connected to a financial loss estimate (e.g., "This is causing ~18-25% conversion drop, leading to estimated $X-$Y monthly loss").
+4. VISUAL STORYTELLING: Provide data points that can be easily mapped to charts (Funnel, Growth, Radar).
+5. STRATEGIC GAP: Clearly define why competitors are winning and how to exploit their weaknesses.
+6. TONE: Confident, authoritative, professional, and slightly aggressive regarding missed opportunities. Use "we" or direct "you".
 
-FORBIDDEN PHRASES:
-- "improve your SEO", "enhance user experience", "build trust with customers", "consider adding", "you might want to".
-
-REQUIRED TONE:
-- Confident and direct, revenue-obsessed, zero corporate fluff.
+FORBIDDEN:
+- Generic phrases like "improve your SEO" or "enhance user experience".
+- Fake precision (use ranges like 18-25% instead of 21.4%).
+- Repeating the same score for different sections.
 """
 
-async def generate_report(data: ReportInput) -> ReportJSON:
+async def generate_report(data: ReportInput) -> dict:
     prompt = _build_report_prompt(data)
     
     logger.info("ai_generation_started", business_name=data.business_name)
@@ -70,11 +75,11 @@ async def generate_report(data: ReportInput) -> ReportJSON:
             raw_output = await _call_ai(retry_prompt)
             report_data = json.loads(raw_output)
             
-        return ReportJSON(**report_data)
+        return report_data
         
     except Exception as e:
         logger.error("ai_generation_failed", error=str(e))
-        raise # Or return a fallback/graceful partial report
+        raise
 
 async def _call_ai(prompt: str) -> str:
     async with httpx.AsyncClient(timeout=60.0) as client:
@@ -111,77 +116,72 @@ def _build_report_prompt(data: ReportInput) -> str:
     comp_str = "\n".join([f"- {c.name} ({c.url}): CTA={c.has_cta}, Strengths={c.apparent_strengths}" for c in data.competitors])
     
     return f"""
-You are auditing: {data.business_name}
-Website: {data.website_url}
-Business Type: {data.business_type or 'inferred'}
-Location: {data.location_hint or 'not specified'}
+AUDIT TARGET: {data.business_name}
+WEBSITE: {data.website_url}
+BUSINESS TYPE: {data.business_type or 'inferred'}
+LOCATION: {data.location_hint or 'not specified'}
 
 SCRAPED DATA:
 - Title: {data.website_summary.title}
-- Description: {data.website_summary.meta_description}
-- CTA Detected: {data.website_summary.cta_detected}
-- Above Fold CTA: {data.website_summary.above_fold_cta}
-- Key Headings: {', '.join(data.website_summary.headings)}
-- Sections: {', '.join(data.website_summary.page_sections)}
-- Social: {', '.join(data.website_summary.social_links)}
-- Speed: {data.website_summary.load_hint}
-- Raw Text Snippet: {data.website_summary.raw_text_sample}
+- Meta: {data.website_summary.meta_description}
+- CTA Status: {data.website_summary.cta_detected} (Above fold: {data.website_summary.above_fold_cta})
+- Content Structure: {', '.join(data.website_summary.headings[:5])}
+- Visual Sections: {', '.join(data.website_summary.page_sections)}
+- Speed Hint: {data.website_summary.load_hint}
+- Snippet: {data.website_summary.raw_text_sample[:500]}
 
-COMPETITORS:
+COMPETITOR LANDSCAPE:
 {comp_str}
 
-INSTRUCTIONS:
-1. Infer the business model.
-2. Identify TOP 3 revenue leaks.
-3. Compare to competitors.
-4. Build a 3-month execution plan.
-5. Write closing scripts (WhatsApp, Email, Call).
+TASK:
+Generate a premium intelligence report in JSON format. 
+You MUST provide data for the following visual components:
+1. Growth Potential: Current vs Optimized revenue projections.
+2. Funnel Analysis: Visitors -> Interest -> Conversion -> Revenue (with drop-off points).
+3. Competitive Radar: SEO, Social, Reviews, UX, Pricing.
 
 RETURN ONLY VALID JSON matching this structure:
 {{
-  "page1": {{
-    "business_model_inferred": "...",
-    "estimated_monthly_loss": "...",
-    "loss_reasoning": "...",
-    "issues": [
-      {{ "title": "...", "impact": "...", "fix": "...", "revenue_implication": "..." }}
-    ],
-    "competitor_gap": [
-      {{ "competitor": "...", "they_have": "...", "you_dont": "...", "impact": "..." }}
-    ],
-    "opportunity_score": "Low|Medium|High",
-    "score_reasoning": "...",
-    "chart_data": {{
-      "current_conversion_estimate": 0.0,
-      "industry_average": 0.0,
-      "potential_after_fix": 0.0,
-      "monthly_loss_low": 0,
-      "monthly_loss_high": 0
-    }}
+  "summary": {{
+    "business_model": "Brief, sharp definition of how they make money.",
+    "opportunity_score": 0.0,
+    "confidence_level": "Low|Medium|High",
+    "revenue_leak_estimate": {{ "min": 0, "max": 0, "currency": "USD", "reasoning": "..." }}
   }},
-  "page2": {{
-    "month1": [ {{ "week": 1, "task": "...", "how": "...", "expected_outcome": "..." }} ],
-    "month2": [...],
-    "month3": [...]
+  "scores": {{
+    "seo": {{ "score": 0, "weight": 0.3, "label": "...", "metrics": {{ "meta": 0, "speed": 0, "indexing": 0 }} }},
+    "conversion": {{ "score": 0, "weight": 0.5, "label": "...", "metrics": {{ "cta": 0, "clarity": 0, "friction": 0 }} }},
+    "trust": {{ "score": 0, "weight": 0.2, "label": "...", "metrics": {{ "reviews": 0, "proof": 0, "social": 0 }} }}
   }},
-  "page3": {{
-    "whatsapp_script": "...",
-    "email_subject": "...",
-    "email_body": "...",
-    "call_opener": "..."
+  "visuals": {{
+    "growth_chart": [ {{ "period": "Current", "value": 1000 }}, {{ "period": "Phase 1", "value": 1400 }}, {{ "period": "Phase 2", "value": 2200 }}, {{ "period": "Phase 3", "value": 3500 }} ],
+    "funnel": [ {{ "stage": "Visitors", "value": 1000 }}, {{ "stage": "Interest", "value": 200 }}, {{ "stage": "Conversion", "value": 20 }}, {{ "stage": "Revenue", "value": 10 }} ],
+    "radar": [ {{ "metric": "SEO", "business": 60, "competitor_avg": 85 }}, {{ "metric": "UX", "business": 40, "competitor_avg": 70 }}, {{ "metric": "Social", "business": 90, "competitor_avg": 60 }}, {{ "metric": "Reviews", "business": 30, "competitor_avg": 80 }} ]
+  }},
+  "prioritized_actions": [
+    {{ "title": "...", "impact": "High|Medium|Low", "effort": "Easy|Moderate|Hard", "roi": "e.g. 5x", "description": "..." }}
+  ],
+  "competitor_analysis": [
+    {{ "name": "...", "strengths": "...", "weaknesses": "...", "strategic_gap": "What to exploit" }}
+  ],
+  "roadmap": {{
+    "phase1": {{ "title": "Quick Wins", "duration": "Week 1-2", "tasks": [ {{ "task": "...", "outcome": "...", "tools": ["..."] }} ] }},
+    "phase2": {{ "title": "Optimization", "duration": "Month 1", "tasks": [ ... ] }},
+    "phase3": {{ "title": "Scaling", "duration": "Month 2-3", "tasks": [ ... ] }}
+  }},
+  "outreach": {{
+    "soft_approach": {{ "subject": "...", "body": "..." }},
+    "value_first": {{ "subject": "...", "body": "..." }},
+    "direct_roi": {{ "subject": "...", "body": "..." }}
   }}
 }}
 """
 
 def _validate_report(report: dict) -> Tuple[bool, List[str]]:
     errors = []
-    required_pages = ["page1", "page2", "page3"]
-    for p in required_pages:
-        if p not in report:
-            errors.append(f"Missing {p}")
-            
-    if "page1" in report:
-        if len(report["page1"].get("issues", [])) != 3:
-            errors.append("page1.issues must have exactly 3 items")
+    required_keys = ["summary", "scores", "visuals", "prioritized_actions", "roadmap", "outreach"]
+    for k in required_keys:
+        if k not in report:
+            errors.append(f"Missing root key: {k}")
             
     return len(errors) == 0, errors
