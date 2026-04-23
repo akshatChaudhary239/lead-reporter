@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --primary: #f59e0b;
+  --primary-foreground: #0f172a;
+  --secondary: #334155;
+  --secondary-foreground: #f8fafc;
+  --accent: #fbbf24;
+  --accent-foreground: #0f172a;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
+  --border: #334155;
+}
+
+[data-theme='emerald'] {
+  --background: #064e3b;
+  --foreground: #ecfdf5;
+  --primary: #10b981;
+  --primary-foreground: #064e3b;
+  --secondary: #065f46;
+  --accent: #34d399;
+  --muted: #065f46;
+  --card: #065f46;
+}
+
+[data-theme='crimson'] {
+  --background: #450a0a;
+  --foreground: #fef2f2;
+  --primary: #ef4444;
+  --primary-foreground: #450a0a;
+  --secondary: #7f1d1d;
+  --accent: #f87171;
+  --muted: #7f1d1d;
+  --card: #7f1d1d;
+}
+
+[data-theme='royal'] {
+  --background: #2e1065;
+  --foreground: #f5f3ff;
+  --primary: #a855f7;
+  --primary-foreground: #2e1065;
+  --secondary: #4c1d95;
+  --accent: #c084fc;
+  --muted: #4c1d95;
+  --card: #4c1d95;
+}
+
+@theme {
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.glass-card {
+  background: rgba(var(--card), 0.5); /* Note: this might need hex to rgb conversion if using tailwind opacity */
+  background: color-mix(in srgb, var(--card) 70%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+}
+
+.amber-glow {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.btn-premium {
+  @apply px-6 py-3 rounded-full font-semibold transition-all duration-300 transform active:scale-95;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  color: var(--primary-foreground);
+}
+
+.btn-premium:hover {
+  box-shadow: 0 0 25px color-mix(in srgb, var(--primary) 40%, transparent);
+  filter: brightness(1.1);
+}
