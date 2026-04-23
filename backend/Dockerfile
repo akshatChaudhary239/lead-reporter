@@ -1,5 +1,5 @@
-# Use official Python image
-FROM python:3.11-slim
+# Use a more complete base image to avoid build issues
+FROM python:3.11-bullseye
 
 # Install system dependencies for Cairo and PDF generation
 RUN apt-get update && apt-get install -y \
