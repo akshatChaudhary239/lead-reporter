@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/context/AuthContext';
-import { Target, LayoutDashboard, FileText, Settings, LogOut, User } from 'lucide-react';
+import { Target, LayoutDashboard, FileText, Settings, LogOut, User, Crown } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
