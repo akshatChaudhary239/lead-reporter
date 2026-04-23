@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { Suspense } from 'react';
 
 interface Report {
   id: string;
@@ -18,7 +19,7 @@ interface Report {
   created_at: string;
 }
 
-export default function DashboardPage() {
+function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { refreshUser } = useAuth();
@@ -174,5 +175,17 @@ export default function DashboardPage() {
         </div>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+        <Loader2 className="animate-spin text-amber-500" size={48} />
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }
