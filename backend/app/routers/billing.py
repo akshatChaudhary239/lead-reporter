@@ -62,8 +62,8 @@ async def create_checkout_session(
             payment_method_types=["card"],
             line_items=[{"price": price_id, "quantity": 1}],
             mode=mode,
-            success_url=f"http://localhost:3000/dashboard?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"http://localhost:3000/pricing",
+            success_url=f"{settings.FRONTEND_URL}/dashboard?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{settings.FRONTEND_URL}/pricing",
             metadata={
                 "user_id": str(current_user.id),
                 "plan_id": req.plan_id

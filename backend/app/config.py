@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     # App
     ENVIRONMENT: str = "development"
     CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    FRONTEND_URL: str = "http://localhost:3000"
     LOG_LEVEL: str = "INFO"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
