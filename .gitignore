@@ -19,8 +19,11 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# Python
+# ...
+# lib/ is too broad, use more specific python build dirs
 lib64/
+# ...
 parts/
 sdist/
 var/
@@ -42,7 +45,8 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # Project Specific
-reports/
+/reports/
+backend/reports/
 *.pdf
 backend/reports/
 backend/db.sqlite3
