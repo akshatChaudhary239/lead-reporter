@@ -9,6 +9,9 @@ interface User {
   email: string;
   full_name: string | null;
   plan: string;
+  free_reports_used: number;
+  reports_purchased: number;
+  reports_this_month: number;
 }
 
 interface AuthContextType {
