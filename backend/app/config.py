@@ -29,7 +29,7 @@ class Settings(BaseSettings):
 
     # App
     ENVIRONMENT: str = "development"
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]
+    CORS_ORIGINS: str | List[str] = "http://localhost:3000"
     
     @property
     def cors_origins_list(self) -> List[str]:
