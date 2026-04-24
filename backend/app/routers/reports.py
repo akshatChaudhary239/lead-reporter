@@ -167,10 +167,20 @@ async def get_report_pdf(
     if report.status != "completed":
         raise HTTPException(status_code=400, detail="Report is not ready yet")
         
-    pdf_path = os.path.abspath(os.path.join(os.getcwd(), "reports", f"{report_id}.pdf"))
+    pdf_filename = f"{report_id}.pdf"
+    pdf_dir = os.path.abspath(os.path.join(os.getcwd(), "reports"))
+    pdf_path = os.path.join(pdf_dir, pdf_filename)
     
     if not os.path.exists(pdf_path):
-        raise HTTPException(status_code=404, detail="PDF file not found")
+        # Self-healing: Regenerate PDF if it's missing from disk but report exists in DB
+        from ..services.pdf_generator import generate_pdf
+        try:
+            os.makedirs(pdf_dir, exist_ok=True)
+            pdf_bytes = await generate_pdf(report.report_json, report.business_name)
+            with open(pdf_path, "wb") as f:
+                f.write(pdf_bytes)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to regenerate PDF: {str(e)}")
         
     return FileResponse(
         pdf_path, 

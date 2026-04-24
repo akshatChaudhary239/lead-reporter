@@ -73,9 +73,8 @@ async def orchestrate_report(
             
             # Save PDF to disk
             pdf_filename = f"{report_id}.pdf"
-            pdf_path = os.path.join("..", "reports", pdf_filename)
-            # Ensure absolute path for writing
-            abs_pdf_path = os.path.abspath(os.path.join(os.getcwd(), "reports", pdf_filename))
+            reports_dir = os.path.abspath(os.path.join(os.getcwd(), "reports"))
+            abs_pdf_path = os.path.join(reports_dir, pdf_filename)
             
             # Ensure reports directory exists
             os.makedirs(os.path.dirname(abs_pdf_path), exist_ok=True)
