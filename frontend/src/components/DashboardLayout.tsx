@@ -29,10 +29,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Sidebar */}
       <aside className="w-64 border-r border-slate-800 flex flex-col">
         <div className="p-6 flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center amber-glow">
-            <Target className="text-slate-900" size={18} />
+          <div className="w-8 h-8 relative flex items-center justify-center">
+            {/* Using the new logo icon */}
+            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain amber-glow" onError={(e) => e.currentTarget.style.display = 'none'} />
+            <Target className="text-amber-500" size={18} />
           </div>
-          <span className="font-bold tracking-tight">LeadReporter</span>
+          <span className="font-bold tracking-tight text-xl">GetProspectra</span>
         </div>
 
         <nav className="flex-1 px-4 space-y-2">

@@ -4,7 +4,7 @@ from .config import settings
 from .routers import auth, reports, billing
 from .utils.logger import setup_logger
 
-app = FastAPI(title="Lead Reporter API", version="1.0.0")
+app = FastAPI(title="GetProspectra API", version="1.0.0")
 
 # Setup structured logging
 setup_logger()

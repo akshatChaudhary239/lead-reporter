@@ -90,7 +90,7 @@ async def _call_ai(prompt: str) -> str:
                     headers={
                         "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
                         "Content-Type": "application/json",
-                        "HTTP-Referer": "https://leadreporter.com", # Required by OpenRouter
+                        "HTTP-Referer": "https://getprospectra.com", # Required by OpenRouter
                     },
                     json={
                         "model": model_info["model"],

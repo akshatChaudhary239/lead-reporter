@@ -15,11 +15,12 @@ export default function Home() {
 
       {/* Navbar */}
       <nav className="relative z-10 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center amber-glow">
-            <Target className="text-slate-900" size={24} />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 relative flex items-center justify-center">
+            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" onError={(e) => e.currentTarget.style.display = 'none'} />
+            <Target className="text-amber-500" size={24} />
           </div>
-          <span className="text-xl font-bold tracking-tight">Lead<span className="text-amber-500">Reporter</span></span>
+          <span className="text-2xl font-black tracking-tighter">Get<span className="text-amber-500">Prospectra</span></span>
         </div>
         <div className="flex items-center gap-6">
           <Link href="/login" className="text-sm font-medium hover:text-amber-500 transition-colors">Login</Link>
@@ -100,8 +101,7 @@ export default function Home() {
       <footer className="border-t border-slate-800 py-12 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-2">
-            <Target className="text-amber-500" size={20} />
-            <span className="font-bold tracking-tight">LeadReporter</span>
+            <span className="font-black tracking-tighter text-lg text-slate-300">Get<span className="text-amber-500">Prospectra</span></span>
           </div>
           <p className="text-slate-500 text-sm">© 2026 Antigravity Systems. All rights reserved.</p>
         </div>

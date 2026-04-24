@@ -6,8 +6,8 @@ import { Providers } from "@/components/Providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Lead Reporter | The Client-Closing Weapon",
-  description: "Generate high-converting lead audit reports in seconds.",
+  title: "GetProspectra | The Client-Closing Weapon",
+  description: "Transform raw leads into high-conviction audit reports in seconds.",
 };
 
 export default function RootLayout({

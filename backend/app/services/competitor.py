@@ -85,7 +85,7 @@ async def _light_scrape(competitor: CompetitorSummary) -> CompetitorSummary:
     """Light scrape to verify basic features."""
     try:
         async with httpx.AsyncClient(timeout=5.0, follow_redirects=True) as client:
-            headers = {"User-Agent": "Mozilla/5.0 (LeadReporterBot/1.0)"}
+            headers = {"User-Agent": "Mozilla/5.0 (GetProspectraBot/1.0)"}
             response = await client.get(competitor.url, headers=headers)
             
             if response.status_code == 200:

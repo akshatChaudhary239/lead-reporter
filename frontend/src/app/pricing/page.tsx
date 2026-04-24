@@ -101,7 +101,7 @@ export default function PricingPage() {
           <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center amber-glow">
             <Target className="text-slate-900" size={18} />
           </div>
-          <span className="font-bold text-xl tracking-tight text-white">LeadReporter</span>
+          <span className="font-bold text-xl tracking-tighter text-white">Get<span className="text-amber-500">Prospectra</span></span>
         </Link>
         <Link href="/dashboard" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">
           Back to Dashboard
