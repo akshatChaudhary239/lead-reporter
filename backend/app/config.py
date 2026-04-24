@@ -29,7 +29,14 @@ class Settings(BaseSettings):
 
     # App
     ENVIRONMENT: str = "development"
-    CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]
+    
+    @property
+    def cors_origins_list(self) -> List[str]:
+        if isinstance(self.CORS_ORIGINS, str):
+            return [s.strip() for s in self.CORS_ORIGINS.split(",")]
+        return self.CORS_ORIGINS
+
     FRONTEND_URL: str = "http://localhost:3000"
     LOG_LEVEL: str = "INFO"
 
