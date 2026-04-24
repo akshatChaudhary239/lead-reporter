@@ -1,324 +1,254 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Intelligence Report - {{ business_name }}</title>
     <style>
         @page {
             size: A4;
-            margin: 15mm;
-            @bottom-right {
-                content: "Page " counter(page);
-                font-size: 9pt;
-                color: #64748b;
-            }
+            margin: 0;
+            background-color: #0a0a0f;
         }
         
         body {
             font-family: Helvetica, Arial, sans-serif;
             color: #f1f5f9;
             background-color: #0a0a0f;
-            line-height: 1.5;
-            font-size: 11pt;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            background-color: #0a0a0f;
+        }
+
+        .page-content {
+            padding: 40pt;
         }
 
         h1, h2, h3, h4 {
             color: #ffffff;
-            margin-bottom: 10pt;
+            margin: 0;
+            padding: 0;
         }
 
         .accent-amber { color: #f59e0b; }
         .accent-indigo { color: #6366f1; }
         
-        /* Layout Utilities */
-        .section {
-            margin-bottom: 30pt;
-            display: block;
-            clear: both;
-        }
-        
-        .keep-together {
-            page-break-inside: avoid;
-        }
-
-        .header {
+        .header-table {
+            width: 100%;
             border-bottom: 1px solid #1e1e2e;
-            padding-bottom: 15pt;
-            margin-bottom: 20pt;
+            margin-bottom: 30pt;
         }
 
-        /* Dashboard Components */
         .leak-banner {
             background-color: #12121a;
             border: 1px solid #f59e0b;
             padding: 20pt;
-            border-radius: 10pt;
             margin-bottom: 20pt;
         }
 
         .loss-value {
-            font-size: 36pt;
+            font-size: 32pt;
             font-weight: bold;
             color: #f59e0b;
-            margin: 5pt 0;
-        }
-
-        .grid-2 {
-            width: 100%;
-        }
-        .grid-2 td {
-            width: 50%;
-            vertical-align: top;
-            padding-right: 10pt;
         }
 
         .card {
             background-color: #12121a;
             border: 1px solid #1e1e2e;
             padding: 15pt;
-            border-radius: 8pt;
             margin-bottom: 15pt;
         }
 
-        /* Chart Simulation for PDF */
-        .bar-container {
+        .table-full {
             width: 100%;
+        }
+
+        /* Chart Simulation */
+        .bar-bg {
             background-color: #1e1e2e;
-            height: 12pt;
-            border-radius: 6pt;
-            margin-top: 5pt;
-            overflow: hidden;
+            height: 10pt;
+            width: 100%;
         }
         .bar-fill {
-            height: 12pt;
             background-color: #f59e0b;
-        }
-
-        .funnel-step {
-            background-color: #1e1e2e;
-            padding: 10pt;
-            margin-bottom: 5pt;
-            border-left: 4pt solid #f59e0b;
-        }
-
-        /* Timeline */
-        .phase-title {
-            background-color: #1e1e2e;
-            padding: 8pt 15pt;
-            border-radius: 5pt;
-            font-weight: bold;
-            margin-bottom: 10pt;
-        }
-
-        .task-item {
-            padding-left: 15pt;
-            border-left: 2px solid #334155;
-            margin-bottom: 10pt;
-        }
-
-        .footer {
-            font-size: 9pt;
-            color: #64748b;
-            text-align: center;
-            margin-top: 40pt;
-            border-top: 1px solid #1e1e2e;
-            padding-top: 10pt;
+            height: 10pt;
         }
 
         .badge {
+            background-color: #451a03;
+            color: #fbbf24;
             font-size: 8pt;
-            font-weight: bold;
             padding: 2pt 6pt;
-            border-radius: 4pt;
-            text-transform: uppercase;
+            font-weight: bold;
         }
-        .badge-red { background-color: #450a0a; color: #f87171; }
-        .badge-amber { background-color: #451a03; color: #fbbf24; }
-        .badge-green { background-color: #064e3b; color: #34d399; }
+
+        .footer {
+            color: #64748b;
+            font-size: 8pt;
+            text-align: center;
+            padding: 20pt;
+        }
+
+        .task-box {
+            border-left: 2px solid #f59e0b;
+            padding-left: 10pt;
+            margin-bottom: 10pt;
+        }
+
+        /* Force break */
+        .page-break {
+            page-break-after: always;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <table style="width: 100%;">
-            <tr>
-                <td style="font-size: 20pt; font-weight: bold;">
-                    PROSPECTRA <span class="accent-amber">INTELLIGENCE</span>
-                </td>
-                <td style="text-align: right; font-size: 10pt; color: #64748b;">
-                    CONFIDENTIAL AUDIT FOR<br/>
-                    <span style="color: #ffffff; font-size: 12pt; font-weight: bold;">{{ business_name }}</span>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <!-- Executive Summary -->
-    <div class="section keep-together">
-        <div class="leak-banner">
-            <h4 class="accent-indigo" style="margin: 0; font-size: 10pt; text-transform: uppercase;">Estimated Revenue Leak</h4>
-            <div class="loss-value">
-                {{ summary.revenue_leak_estimate.currency|default('$') }}{{ summary.revenue_leak_estimate.min }} - {{ summary.revenue_leak_estimate.max }}
-                <span style="font-size: 14pt; color: #64748b;">/ month</span>
-            </div>
-            <p style="color: #94a3b8; font-size: 11pt;">{{ summary.revenue_leak_estimate.reasoning }}</p>
-        </div>
-        
-        <table class="grid-2">
-            <tr>
-                <td>
-                    <div class="card">
-                        <h4 style="font-size: 10pt; color: #64748b; text-transform: uppercase;">Business Model</h4>
-                        <p style="font-weight: bold;">{{ summary.business_model }}</p>
-                    </div>
-                </td>
-                <td>
-                    <div class="card">
-                        <h4 style="font-size: 10pt; color: #64748b; text-transform: uppercase;">Opportunity Score</h4>
-                        <div style="font-size: 24pt; font-weight: bold;" class="accent-amber">
-                            {{ (summary.opportunity_score * 100)|round|int }}%
-                        </div>
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <!-- Intelligence Scores -->
-    <div class="section">
-        <h3 class="accent-amber">Intelligence Breakdown</h3>
-        <table class="grid-2">
-            <tr>
-                <td>
-                    <div class="card">
-                        <h4 style="margin: 0;">SEO Performance: {{ scores.seo.score }}%</h4>
-                        <div class="bar-container"><div class="bar-fill" style="width: {{ scores.seo.score }}%;"></div></div>
-                        <ul style="font-size: 9pt; color: #94a3b8; margin-top: 10pt; padding-left: 15pt;">
-                            {% for key, val in scores.seo.metrics.items() %}
-                            <li>{{ key|capitalize }}: {{ val }}%</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </td>
-                <td>
-                    <div class="card">
-                        <h4 style="margin: 0;">Conversion Clarity: {{ scores.conversion.score }}%</h4>
-                        <div class="bar-container"><div class="bar-fill" style="width: {{ scores.conversion.score }}%; background-color: #6366f1;"></div></div>
-                        <ul style="font-size: 9pt; color: #94a3b8; margin-top: 10pt; padding-left: 15pt;">
-                            {% for key, val in scores.conversion.metrics.items() %}
-                            <li>{{ key|capitalize }}: {{ val }}%</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <pdf:nextpage />
-
-    <!-- Prioritized Actions -->
-    <div class="section">
-        <h3 class="accent-amber">Top Strategic Fixes</h3>
-        {% for action in prioritized_actions %}
-        <div class="card keep-together">
-            <table style="width: 100%;">
+    <div class="container">
+        <!-- Page 1 -->
+        <div class="page-content">
+            <table class="header-table">
                 <tr>
-                    <td style="font-weight: bold; font-size: 14pt;">{{ loop.index }}. {{ action.title }}</td>
-                    <td style="text-align: right;">
-                        <span class="badge badge-amber">{{ action.impact }} Impact</span>
+                    <td style="font-size: 20pt; font-weight: bold; color: #ffffff;">
+                        GET<span class="accent-amber">PROSPECTRA</span>
+                    </td>
+                    <td style="text-align: right; color: #64748b; font-size: 9pt;">
+                        CONFIDENTIAL AUDIT FOR<br/>
+                        <span style="color: #ffffff; font-size: 11pt; font-weight: bold;">{{ business_name }}</span>
                     </td>
                 </tr>
             </table>
-            <p style="color: #94a3b8; font-size: 10pt; margin-top: 10pt;">{{ action.description }}</p>
-            <div style="margin-top: 10pt; font-size: 9pt;">
-                <span style="color: #64748b;">Effort:</span> <span style="color: #ffffff;">{{ action.effort }}</span> | 
-                <span style="color: #64748b;">Est. ROI:</span> <span class="accent-amber" style="font-weight: bold;">{{ action.roi }}</span>
+
+            <div class="leak-banner">
+                <div style="font-size: 9pt; color: #6366f1; font-weight: bold; text-transform: uppercase;">Estimated Revenue Leak</div>
+                <div class="loss-value">
+                    {{ summary.revenue_leak_estimate.currency|default('$') }}{{ summary.revenue_leak_estimate.min }} - {{ summary.revenue_leak_estimate.max }}
+                    <span style="font-size: 12pt; color: #64748b;">/ month</span>
+                </div>
+                <p style="color: #94a3b8; font-size: 10pt;">{{ summary.revenue_leak_estimate.reasoning }}</p>
+            </div>
+
+            <table class="table-full" style="margin-bottom: 20pt;">
+                <tr>
+                    <td style="width: 50%; padding-right: 10pt;">
+                        <div class="card">
+                            <div style="font-size: 8pt; color: #64748b;">BUSINESS MODEL</div>
+                            <div style="font-weight: bold; margin-top: 5pt;">{{ summary.business_model }}</div>
+                        </div>
+                    </td>
+                    <td style="width: 50%;">
+                        <div class="card">
+                            <div style="font-size: 8pt; color: #64748b;">OPPORTUNITY SCORE</div>
+                            <div style="font-size: 20pt; font-weight: bold;" class="accent-amber">
+                                {{ (summary.opportunity_score * 100)|round|int }}%
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <h3 class="accent-amber" style="margin-bottom: 15pt;">Intelligence Breakdown</h3>
+            <table class="table-full">
+                <tr>
+                    <td style="width: 50%; padding-right: 10pt;">
+                        <div class="card">
+                            <div style="font-weight: bold; margin-bottom: 5pt;">SEO Performance: {{ scores.seo.score }}%</div>
+                            <div class="bar-bg"><div class="bar-fill" style="width: {{ scores.seo.score }}%;"></div></div>
+                            <div style="font-size: 8pt; color: #94a3b8; margin-top: 8pt;">
+                                {% for key, val in scores.seo.metrics.items() %}
+                                {{ key|capitalize }}: {{ val }}% &nbsp;&nbsp;
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </td>
+                    <td style="width: 50%;">
+                        <div class="card">
+                            <div style="font-weight: bold; margin-bottom: 5pt;">Conversion Clarity: {{ scores.conversion.score }}%</div>
+                            <div class="bar-bg"><div class="bar-fill" style="width: {{ scores.conversion.score }}%; background-color: #6366f1;"></div></div>
+                            <div style="font-size: 8pt; color: #94a3b8; margin-top: 8pt;">
+                                {% for key, val in scores.conversion.metrics.items() %}
+                                {{ key|capitalize }}: {{ val }}% &nbsp;&nbsp;
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="page-break"></div>
+
+        <!-- Page 2 -->
+        <div class="page-content">
+            <h3 class="accent-amber" style="margin-bottom: 20pt;">Top Strategic Fixes</h3>
+            {% for action in prioritized_actions %}
+            <div class="card">
+                <table class="table-full">
+                    <tr>
+                        <td style="font-weight: bold; font-size: 12pt;">{{ loop.index }}. {{ action.title }}</td>
+                        <td style="text-align: right;"><span class="badge">{{ action.impact }} IMPACT</span></td>
+                    </tr>
+                </table>
+                <p style="color: #94a3b8; font-size: 10pt; margin-top: 8pt;">{{ action.description }}</p>
+                <div style="font-size: 9pt; margin-top: 8pt; color: #64748b;">
+                    Effort: <span style="color: #ffffff;">{{ action.effort }}</span> | 
+                    Est. ROI: <span class="accent-amber" style="font-weight: bold;">{{ action.roi }}</span>
+                </div>
+            </div>
+            {% endfor %}
+
+            <h3 class="accent-indigo" style="margin: 20pt 0 15pt 0;">Competitive Strategy</h3>
+            <table class="table-full">
+                <tr>
+                    {% for comp in competitor_analysis %}
+                    <td style="width: 33%; vertical-align: top;">
+                        <div class="card" style="margin-right: 5pt; min-height: 120pt;">
+                            <div style="font-weight: bold; margin-bottom: 4pt;">{{ comp.name }}</div>
+                            <div style="font-size: 7pt; color: #64748b;">THEIR STRENGTH</div>
+                            <div style="font-size: 8pt; color: #6366f1; margin-bottom: 8pt;">{{ comp.strengths }}</div>
+                            <div style="font-size: 7pt; color: #f59e0b;">STRATEGIC GAP</div>
+                            <div style="font-size: 8pt;">{{ comp.strategic_gap }}</div>
+                        </div>
+                    </td>
+                    {% endfor %}
+                </tr>
+            </table>
+        </div>
+
+        <div class="page-break"></div>
+
+        <!-- Page 3 -->
+        <div class="page-content">
+            <h3 class="accent-amber" style="margin-bottom: 20pt;">90-Day Execution Roadmap</h3>
+            
+            <div style="background-color: #1e1e2e; padding: 6pt 12pt; font-weight: bold; margin-bottom: 10pt;">Phase 1: {{ roadmap.phase1.title }}</div>
+            {% for t in roadmap.phase1.tasks %}
+            <div class="task-box">
+                <div style="font-weight: bold; font-size: 10pt;">{{ t.task }}</div>
+                <div style="font-size: 9pt; color: #94a3b8;">{{ t.outcome }}</div>
+            </div>
+            {% endfor %}
+
+            <div style="background-color: #1e1e2e; padding: 6pt 12pt; font-weight: bold; margin: 15pt 0 10pt 0;">Phase 2: {{ roadmap.phase2.title }}</div>
+            {% for t in roadmap.phase2.tasks %}
+            <div class="task-box">
+                <div style="font-weight: bold; font-size: 10pt;">{{ t.task }}</div>
+                <div style="font-size: 9pt; color: #94a3b8;">{{ t.outcome }}</div>
+            </div>
+            {% endfor %}
+
+            <div style="background-color: #1e1e2e; padding: 6pt 12pt; font-weight: bold; margin: 15pt 0 10pt 0;">Phase 3: {{ roadmap.phase3.title }}</div>
+            {% for t in roadmap.phase3.tasks %}
+            <div class="task-box">
+                <div style="font-weight: bold; font-size: 10pt;">{{ t.task }}</div>
+                <div style="font-size: 9pt; color: #94a3b8;">{{ t.outcome }}</div>
+            </div>
+            {% endfor %}
+
+            <div class="footer">
+                Generated by GetProspectra Intelligence Bot | Confidential Audit {{ generated_at }}
             </div>
         </div>
-        {% endfor %}
-    </div>
-
-    <!-- Competitive Analysis -->
-    <div class="section keep-together">
-        <h3 class="accent-indigo">Competitive Strategic Gap</h3>
-        <table style="width: 100%; border-collapse: separate; border-spacing: 5pt;">
-            <tr>
-                {% for comp in competitor_analysis %}
-                <td style="background-color: #12121a; border: 1px solid #1e1e2e; padding: 10pt; border-radius: 8pt; width: 33%;">
-                    <div style="font-weight: bold; margin-bottom: 5pt;">{{ comp.name }}</div>
-                    <div style="font-size: 8pt; color: #64748b;">THEIR STRENGTH</div>
-                    <div style="font-size: 9pt; color: #6366f1; margin-bottom: 8pt;">{{ comp.strengths }}</div>
-                    <div style="font-size: 8pt; color: #f59e0b;">YOUR OPPORTUNITY</div>
-                    <div style="font-size: 9pt;">{{ comp.strategic_gap }}</div>
-                </td>
-                {% endfor %}
-            </tr>
-        </table>
-    </div>
-
-    <pdf:nextpage />
-
-    <!-- Execution Roadmap -->
-    <div class="section">
-        <h3 class="accent-amber">90-Day Execution Roadmap</h3>
-        
-        <div class="phase-title">Phase 1: {{ roadmap.phase1.title }} ({{ roadmap.phase1.duration }})</div>
-        {% for t in roadmap.phase1.tasks %}
-        <div class="task-item keep-together">
-            <div style="font-weight: bold;">{{ t.task }}</div>
-            <div style="font-size: 10pt; color: #94a3b8;">{{ t.outcome }}</div>
-        </div>
-        {% endfor %}
-
-        <div class="phase-title" style="margin-top: 20pt;">Phase 2: {{ roadmap.phase2.title }} ({{ roadmap.phase2.duration }})</div>
-        {% for t in roadmap.phase2.tasks %}
-        <div class="task-item keep-together">
-            <div style="font-weight: bold;">{{ t.task }}</div>
-            <div style="font-size: 10pt; color: #94a3b8;">{{ t.outcome }}</div>
-        </div>
-        {% endfor %}
-
-        <div class="phase-title" style="margin-top: 20pt;">Phase 3: {{ roadmap.phase3.title }} ({{ roadmap.phase3.duration }})</div>
-        {% for t in roadmap.phase3.tasks %}
-        <div class="task-item keep-together">
-            <div style="font-weight: bold;">{{ t.task }}</div>
-            <div style="font-size: 10pt; color: #94a3b8;">{{ t.outcome }}</div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <pdf:nextpage />
-
-    <!-- Closing Scripts -->
-    <div class="section">
-        <h3 class="accent-indigo">Strategic Outreach Kit</h3>
-        <p style="color: #94a3b8; font-size: 10pt; margin-bottom: 20pt;">Use these scripts to initiate the conversation with {{ business_name }}. These are designed to highlight the findings in this report and position you as a high-value consultant.</p>
-
-        <div class="card keep-together">
-            <h4 class="accent-amber">WhatsApp / Direct Message</h4>
-            <div style="background-color: #000; padding: 10pt; font-family: monospace; font-size: 9pt;">
-                {{ outreach.soft_approach.body }}
-            </div>
-        </div>
-
-        <div class="card keep-together">
-            <h4 class="accent-indigo">Value-First Email</h4>
-            <div style="background-color: #000; padding: 10pt; font-family: monospace; font-size: 9pt;">
-                <span style="color: #64748b;">Subject:</span> {{ outreach.value_first.subject }}<br/><br/>
-                {{ outreach.value_first.body }}
-            </div>
-        </div>
-
-        <div class="card keep-together">
-            <h4 class="accent-amber">ROI Phone Script</h4>
-            <div style="font-style: italic; color: #f1f5f9; padding: 10pt;">
-                {{ outreach.direct_roi.body }}
-            </div>
-        </div>
-    </div>
-
-    <div class="footer">
-        Generated by Prospectra Agent | Data-Driven Business Intelligence Audit
     </div>
 </body>
 </html>
