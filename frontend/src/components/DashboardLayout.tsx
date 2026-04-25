@@ -19,6 +19,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Opportunities', href: '/dashboard/discover', icon: Target },
     { name: 'Reports', href: '/dashboard/reports', icon: FileText },
     { name: 'Pricing', href: '/pricing', icon: Crown },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
@@ -86,10 +87,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               />
             </div>
             {user.reports_purchased > 0 && (
-              <div className="text-[9px] text-slate-500 uppercase font-bold mb-2">
-                + {user.reports_purchased} Bonus Credits Available
+              <div className="text-[9px] text-slate-500 uppercase font-bold mb-1">
+                + {user.reports_purchased} Bonus Reports
               </div>
             )}
+            <div className="text-[9px] text-purple-500 uppercase font-bold mb-2">
+              + {user.credits} Discovery Credits
+            </div>
             <Link 
               href="/pricing" 
               className="block text-center text-[10px] font-bold uppercase tracking-widest py-2 bg-amber-500/10 text-amber-500 rounded-lg hover:bg-amber-500/20 transition-all border border-amber-500/20"

@@ -20,6 +20,10 @@ class User(Base):
     reports_this_month: Mapped[int] = mapped_column(Integer, default=0)
     last_report_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     last_month_reset: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    
+    # Discovery Credits
+    credits: Mapped[int] = mapped_column(Integer, default=5) # Initial free credits for testing
+    
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 

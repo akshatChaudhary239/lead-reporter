@@ -28,6 +28,7 @@ class UserProfile(BaseModel):
     free_reports_used: int
     reports_purchased: int
     reports_this_month: int
+    credits: int
 
 @router.post("/register", response_model=Token)
 async def register(user_in: UserRegister, db: AsyncSession = Depends(get_db)):
@@ -78,5 +79,6 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "plan": current_user.plan,
         "free_reports_used": current_user.free_reports_used,
         "reports_purchased": current_user.reports_purchased,
-        "reports_this_month": current_user.reports_this_month
+        "reports_this_month": current_user.reports_this_month,
+        "credits": current_user.credits
     }

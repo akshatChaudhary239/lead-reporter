@@ -12,6 +12,7 @@ interface User {
   free_reports_used: number;
   reports_purchased: number;
   reports_this_month: number;
+  credits: number;
 }
 
 interface AuthContextType {

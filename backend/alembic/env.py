@@ -14,6 +14,8 @@ from app.database import Base
 from app.models.user import User
 from app.models.report import Report
 from app.models.usage import UsageEvent, Payment
+from app.models.public_lead import PublicLead
+from app.models.lead_unlock import LeadUnlock
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
