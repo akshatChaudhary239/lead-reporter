@@ -168,8 +168,8 @@ async def delete_lead(
 
 @router.post("/bulk")
 async def bulk_upload(
-    file: UploadFile = File(...),
     background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
     admin: User = Depends(get_current_admin),
     db: AsyncSession = Depends(get_db)
 ):
