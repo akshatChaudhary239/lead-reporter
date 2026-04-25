@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import String, Integer, DateTime, Text, Index
+from sqlalchemy import String, Integer, DateTime, Text, Index, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 from ..database import Base
 
@@ -23,6 +23,8 @@ class User(Base):
     
     # Discovery Credits
     credits: Mapped[int] = mapped_column(Integer, default=5) # Initial free credits for testing
+    
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

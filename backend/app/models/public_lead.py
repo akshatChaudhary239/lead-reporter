@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import String, DateTime, Text, JSON, Index, Integer
+from sqlalchemy import String, DateTime, Text, JSON, Index, Integer, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 from ..database import Base
 
@@ -14,8 +14,13 @@ class PublicLead(Base):
     opportunity_score: Mapped[str] = mapped_column(String, nullable=False) # High, Medium, Low
     teaser_insight: Mapped[str] = mapped_column(Text, nullable=False)
     teaser_revenue_leak: Mapped[str] = mapped_column(String, nullable=True)
-    report_json: Mapped[dict] = mapped_column(JSON, nullable=False)
+    report_json: Mapped[dict] = mapped_column(JSON, nullable=True) # Allow null for pending/processing
     website_url: Mapped[str] = mapped_column(String, nullable=False)
+    
+    # Admin & Status tracking
+    status: Mapped[str] = mapped_column(String, default="completed") # pending, processing, completed, failed
+    is_approved: Mapped[bool] = mapped_column(Boolean, default=True)
+    error_message: Mapped[str] = mapped_column(Text, nullable=True)
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

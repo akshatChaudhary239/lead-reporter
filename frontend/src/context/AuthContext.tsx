@@ -13,6 +13,7 @@ interface User {
   reports_purchased: number;
   reports_this_month: number;
   credits: number;
+  is_admin: boolean;
 }
 
 interface AuthContextType {

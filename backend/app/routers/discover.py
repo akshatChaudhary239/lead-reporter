@@ -30,7 +30,7 @@ async def list_discover_leads(
     offset = (page - 1) * size
     
     # Base query
-    query = select(PublicLead)
+    query = select(PublicLead).where(PublicLead.is_approved == True, PublicLead.status == "completed")
     
     # Filters
     if category:
