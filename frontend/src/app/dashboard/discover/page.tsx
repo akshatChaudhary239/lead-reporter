@@ -117,7 +117,23 @@ export default function DiscoverPage() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="h-64 bg-slate-800/20 rounded-2xl border border-slate-800 animate-pulse" />
+              <div key={i} className="bg-slate-900/50 rounded-2xl border border-slate-800 p-6 space-y-4 animate-pulse">
+                <div className="flex justify-between">
+                  <div className="w-20 h-5 bg-slate-800 rounded" />
+                  <div className="w-24 h-5 bg-slate-800 rounded" />
+                </div>
+                <div className="w-3/4 h-7 bg-slate-800 rounded mt-4" />
+                <div className="w-1/2 h-4 bg-slate-800 rounded" />
+                <div className="space-y-2 pt-4">
+                  <div className="w-full h-3 bg-slate-800 rounded" />
+                  <div className="w-full h-3 bg-slate-800 rounded" />
+                  <div className="w-2/3 h-3 bg-slate-800 rounded" />
+                </div>
+                <div className="flex justify-between items-center pt-6">
+                  <div className="w-24 h-3 bg-slate-800 rounded" />
+                  <div className="w-32 h-10 bg-slate-800 rounded-xl" />
+                </div>
+              </div>
             ))}
           </div>
         ) : leads.length === 0 ? (
