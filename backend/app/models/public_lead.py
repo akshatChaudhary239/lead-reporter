@@ -19,7 +19,7 @@ class PublicLead(Base):
     
     # Admin & Status tracking
     status: Mapped[str] = mapped_column(String, default="completed") # pending, processing, completed, failed
-    is_approved: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_approved: Mapped[bool] = mapped_column(Boolean, default=False)
     error_message: Mapped[str] = mapped_column(Text, nullable=True)
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

@@ -46,14 +46,17 @@ async def process_public_lead(lead_id: uuid.UUID, db: AsyncSession):
         report_json = await generate_report(ai_input)
         
         # 5. Extract teaser info
-        teaser_insight = report_json.summary.business_model + ". " + report_json.summary.revenue_leak_estimate.reasoning[:200]
-        teaser_leak = f"{report_json.summary.revenue_leak_estimate.currency}{report_json.summary.revenue_leak_estimate.min}-{report_json.summary.revenue_leak_estimate.max}/mo"
+        summary = report_json.get('summary', {})
+        rev_leak = summary.get('revenue_leak_estimate', {})
+        
+        teaser_insight = summary.get('business_model', 'No business model identified') + ". " + rev_leak.get('reasoning', '')[:200]
+        teaser_leak = f"{rev_leak.get('currency', 'USD')}{rev_leak.get('min', 0)}-{rev_leak.get('max', 0)}/mo"
         
         # 6. Update PublicLead
-        lead.opportunity_score = "High" if report_json.summary.opportunity_score > 0.7 else "Medium"
+        lead.opportunity_score = "High" if summary.get('opportunity_score', 0) > 0.7 else "Medium"
         lead.teaser_insight = teaser_insight
         lead.teaser_revenue_leak = teaser_leak
-        lead.report_json = report_json.model_dump()
+        lead.report_json = report_json
         lead.status = "completed"
         lead.error_message = None
         lead.last_refreshed_at = datetime.now(timezone.utc)
