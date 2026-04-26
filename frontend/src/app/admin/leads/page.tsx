@@ -59,6 +59,18 @@ export default function AdminLeadsPage() {
     }
   }, [page, user]);
 
+  // Add polling for active generations
+  useEffect(() => {
+    const activeGenerations = leads.some(l => l.status === 'pending' || l.status === 'processing');
+    
+    if (activeGenerations) {
+      const interval = setInterval(() => {
+        fetchLeads();
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [leads]);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setProcessing(true);

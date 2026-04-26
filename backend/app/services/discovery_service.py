@@ -65,7 +65,13 @@ async def process_public_lead(lead_id: uuid.UUID, db: AsyncSession):
         logger.info("process_public_lead_completed", lead_id=str(lead_id))
         
     except Exception as e:
-        logger.error("process_public_lead_failed", lead_id=str(lead_id), error=str(e))
-        lead.status = "failed"
-        lead.error_message = str(e)
-        await db.commit()
+        logger.error("process_public_lead_exception", lead_id=str(lead_id), error=str(e), type=type(e).__name__)
+        try:
+            # Try to mark as failed in a fresh transaction if possible
+            lead.status = "failed"
+            lead.error_message = str(e)
+            await db.commit()
+            logger.info("process_public_lead_marked_failed", lead_id=str(lead_id))
+        except Exception as commit_err:
+            logger.error("process_public_lead_commit_failed", error=str(commit_err))
+            await db.rollback()
