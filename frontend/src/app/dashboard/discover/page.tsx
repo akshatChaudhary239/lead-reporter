@@ -183,7 +183,7 @@ export default function DiscoverPage() {
                     </div>
                     {lead.is_unlocked ? (
                       <a 
-                        href={`/dashboard/reports/${lead.id}`} 
+                        href={`/dashboard/discover/${lead.id}`} 
                         className="flex items-center gap-2 text-purple-400 font-bold text-sm hover:text-purple-300 transition-colors"
                       >
                         View Intelligence
