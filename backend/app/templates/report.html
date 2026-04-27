@@ -180,6 +180,22 @@
 
         <!-- Page 2 -->
         <div class="page-content">
+            {% if social_insights and social_insights.has_data %}
+            <div class="leak-banner" style="border-color: #6366f1; margin-bottom: 25pt;">
+                <div style="font-size: 9pt; color: #6366f1; font-weight: bold; text-transform: uppercase;">Fresh Social Signals</div>
+                <div style="font-size: 11pt; font-weight: bold; color: #ffffff; margin-top: 5pt; margin-bottom: 8pt;">
+                    Recent Activity
+                </div>
+                <p style="color: #94a3b8; font-size: 10pt; font-style: italic;">"{{ social_insights.recent_activity }}"</p>
+                <div style="border-top: 1px dashed #1e1e2e; margin: 10pt 0; padding-top: 10pt;">
+                    <div style="font-size: 9pt; color: #f59e0b; font-weight: bold;">AI PREDICTION & OPPORTUNITY</div>
+                    <div style="font-size: 11pt; font-weight: bold; color: #ffffff; margin-top: 4pt; line-height: 1.4;">
+                        {{ social_insights.future_step_prediction }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <h3 class="accent-amber" style="margin-bottom: 20pt;">Top Strategic Fixes</h3>
             {% for action in prioritized_actions %}
             <div class="card">
@@ -213,6 +229,20 @@
                     {% endfor %}
                 </tr>
             </table>
+
+            {% if step_by_step_guides %}
+            <h3 class="accent-amber" style="margin: 25pt 0 15pt 0;">Step-by-Step Execution Guides</h3>
+            {% for guide in step_by_step_guides %}
+            <div class="card">
+                <div style="font-weight: bold; font-size: 12pt; margin-bottom: 10pt; color: #f59e0b;">{{ guide.title }}</div>
+                {% for step in guide.steps %}
+                <div style="color: #e2e8f0; font-size: 10pt; margin-bottom: 8pt; padding-left: 10pt; border-left: 2px solid #6366f1;">
+                    {{ step }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+            {% endif %}
         </div>
 
         <div class="page-break"></div>

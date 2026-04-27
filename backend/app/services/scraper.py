@@ -23,6 +23,7 @@ class ScrapedData(BaseModel):
     pages_found: List[str] = []
     raw_text_sample: str = ""
     scrape_error: str | None = None
+    social_data: Dict[str, str] = {}
 
 CTA_KEYWORDS = [
     "book", "schedule", "get started", "free", "call", "contact",
@@ -51,17 +52,24 @@ async def scrape_website(url: str) -> ScrapedData:
             
             if response.status_code != 200:
                 logger.warning("httpx_scrape_failed", url=url, status=response.status_code)
-                return await _scrape_with_playwright(url, data)
+                data = await _scrape_with_playwright(url, data)
                 
-            if len(response.text) < 500:
+            elif len(response.text) < 500:
                 logger.info("httpx_response_too_short", url=url)
-                return await _scrape_with_playwright(url, data)
+                data = await _scrape_with_playwright(url, data)
                 
-            return _parse_html(response.text, data)
+            else:
+                data = _parse_html(response.text, data)
             
     except Exception as e:
         logger.error("httpx_scrape_error", url=url, error=str(e))
-        return await _scrape_with_playwright(url, data)
+        data = await _scrape_with_playwright(url, data)
+
+    # Scrape found social profiles to get recent post text
+    if data.social_links:
+        data.social_data = await _scrape_social_profiles(data.social_links)
+        
+    return data
 
 async def _scrape_with_playwright(url: str, data: ScrapedData) -> ScrapedData:
     logger.info("playwright_scrape_started", url=url)
@@ -177,3 +185,52 @@ def _discover_social_links(html: str, soup: BeautifulSoup) -> List[str]:
                 links.append(full_url)
                 
     return list(set(links))[:10]
+
+async def _scrape_social_profiles(links: List[str]) -> Dict[str, str]:
+    social_data = {}
+    # We only take up to 2 links to avoid long delays, prioritizing insta/fb/twitter
+    target_links = links[:2]
+    if not target_links:
+        return social_data
+        
+    logger.info("social_scraping_started", links=target_links)
+    
+    try:
+        from playwright.async_api import async_playwright
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            context = await browser.new_context(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            
+            async def fetch_social_text(link: str) -> Tuple[str, str]:
+                page = await context.new_page()
+                try:
+                    await page.goto(link, timeout=12000, wait_until="domcontentloaded")
+                    # Try to scroll a bit to trigger lazy loads
+                    await page.evaluate("window.scrollBy(0, 500)")
+                    await asyncio.sleep(1) # tiny wait for content
+                    title = await page.title()
+                    # Extract visible text but cap it to avoid massive strings
+                    text = await page.evaluate("() => document.body.innerText.substring(0, 2000)")
+                    return link, f"Title: {title}\nContent Snippet: {text}"
+                except Exception as e:
+                    logger.warning("social_scrape_failed", link=link, error=str(e))
+                    return link, "Access restricted or timeout."
+                finally:
+                    await page.close()
+            
+            tasks = [fetch_social_text(link) for link in target_links]
+            results = await asyncio.gather(*tasks)
+            
+            for link, text in results:
+                platform = "unknown"
+                for p_name, pattern in SOCIAL_PATTERNS.items():
+                    if re.search(pattern, link, re.I):
+                        platform = p_name
+                        break
+                social_data[platform] = text
+                
+            await browser.close()
+    except Exception as e:
+        logger.error("social_scraping_error", error=str(e))
+        
+    return social_data

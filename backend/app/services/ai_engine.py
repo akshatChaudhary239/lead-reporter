@@ -25,6 +25,25 @@ class ReportJSON(BaseModel):
     competitor_analysis: List[Dict[str, Any]]
     roadmap: Dict[str, Any]
     outreach: Dict[str, Any]
+    social_insights: Dict[str, Any]
+    step_by_step_guides: List[Dict[str, Any]]
+
+def get_currency_from_location(location_hint: str | None) -> str:
+    if not location_hint:
+        return "USD"
+        
+    hint = location_hint.lower()
+    if any(k in hint for k in ["india", "in", "bharat", "rupee", "inr"]):
+        return "INR"
+    if any(k in hint for k in ["germany", "de", "deutschland", "europe", "france", "italy", "spain", "euro", "eur"]):
+        return "EUR"
+    if any(k in hint for k in ["uk", "united kingdom", "britain", "england", "pound", "gbp"]):
+        return "GBP"
+    if any(k in hint for k in ["australia", "au", "aud"]):
+        return "AUD"
+    if any(k in hint for k in ["canada", "ca", "cad"]):
+        return "CAD"
+    return "USD"
 
 MODEL_CHAIN = [
     {
@@ -46,14 +65,15 @@ Your goal is to transform raw business data into a high-conviction, data-backed,
 BEHAVIORAL RULES:
 1. NO GENERIC ADVICE. Every insight must be anchored to THIS specific business's data or industry benchmarks.
 2. DYNAMIC SCORING: Metrics must be weighted logic, not hardcoded. 
-3. REVENUE FOCUS: Every problem must be connected to a financial loss estimate (e.g., "This is causing ~18-25% conversion drop, leading to estimated $X-$Y monthly loss").
-4. VISUAL STORYTELLING: Provide data points that can be easily mapped to charts (Funnel, Growth, Radar).
-5. STRATEGIC GAP: Clearly define why competitors are winning and how to exploit their weaknesses.
-6. TONE: Confident, authoritative, professional, and slightly aggressive regarding missed opportunities. Use "we" or direct "you".
+3. REVENUE FOCUS: Every problem must be connected to a financial loss estimate. ALL financial figures MUST use the exact TARGET CURRENCY specified in the prompt.
+4. ACCURATE NUMBERS: Provide highly precise, realistic metrics (e.g., "18.4% conversion drop" instead of ranges) and calculate exact estimated lost revenue based on traffic hints or industry averages. Do NOT use fake precision where impossible, but make it look like a deeply calculated audit.
+5. VISUAL STORYTELLING: Provide data points that can be easily mapped to charts (Funnel, Growth, Radar).
+6. SOCIAL MEDIA INTELLIGENCE: Analyze the provided SOCIAL MEDIA & RECENT ACTIVITY data. If present, extract recent posts and predict future steps. You MUST phrase it explicitly like: "They recently posted about [Topic] on [Platform], meaning their future step can be [Action], and you can help them achieve it by [Service]."
+7. STRATEGIC GUIDES: Provide deep, actionable, step-by-step guides for fixing the core issues identified, heavily referencing comparisons with competitors.
+8. TONE: Confident, authoritative, professional, and slightly aggressive regarding missed opportunities. Use "we" or direct "you".
 
 FORBIDDEN:
 - Generic phrases like "improve your SEO" or "enhance user experience".
-- Fake precision (use ranges like 18-25% instead of 21.4%).
 - Repeating the same score for different sections.
 """
 
@@ -115,11 +135,18 @@ async def _call_ai(prompt: str) -> str:
 def _build_report_prompt(data: ReportInput) -> str:
     comp_str = "\n".join([f"- {c.name} ({c.url}): CTA={c.has_cta}, Strengths={c.apparent_strengths}" for c in data.competitors])
     
+    target_currency = get_currency_from_location(data.location_hint)
+    
+    social_data_str = "No recent social data extracted."
+    if hasattr(data.website_summary, 'social_data') and data.website_summary.social_data:
+        social_data_str = "\n".join([f"- {plat}: {text}" for plat, text in data.website_summary.social_data.items()])
+        
     return f"""
 AUDIT TARGET: {data.business_name}
 WEBSITE: {data.website_url}
 BUSINESS TYPE: {data.business_type or 'inferred'}
 LOCATION: {data.location_hint or 'not specified'}
+TARGET CURRENCY: {target_currency} (Use this currency code for ALL financial estimates)
 
 SCRAPED DATA:
 - Title: {data.website_summary.title}
@@ -129,6 +156,9 @@ SCRAPED DATA:
 - Visual Sections: {', '.join(data.website_summary.page_sections)}
 - Speed Hint: {data.website_summary.load_hint}
 - Snippet: {data.website_summary.raw_text_sample[:500]}
+
+SOCIAL MEDIA & RECENT ACTIVITY:
+{social_data_str}
 
 COMPETITOR LANDSCAPE:
 {comp_str}
@@ -146,7 +176,7 @@ RETURN ONLY VALID JSON matching this structure:
     "business_model": "Brief, sharp definition of how they make money.",
     "opportunity_score": 0.0,
     "confidence_level": "Low|Medium|High",
-    "revenue_leak_estimate": {{ "min": 0, "max": 0, "currency": "USD", "reasoning": "..." }}
+    "revenue_leak_estimate": {{ "min": 0, "max": 0, "currency": "{target_currency}", "reasoning": "..." }}
   }},
   "scores": {{
     "seo": {{ "score": 0, "weight": 0.3, "label": "...", "metrics": {{ "meta": 0, "speed": 0, "indexing": 0 }} }},
@@ -173,13 +203,21 @@ RETURN ONLY VALID JSON matching this structure:
     "soft_approach": {{ "subject": "...", "body": "..." }},
     "value_first": {{ "subject": "...", "body": "..." }},
     "direct_roi": {{ "subject": "...", "body": "..." }}
-  }}
+  }},
+  "social_insights": {{
+    "has_data": true,
+    "recent_activity": "Brief summary of their recent social posts if any",
+    "future_step_prediction": "They recently posted about [Topic] on [Platform] meaning their future step can be [Action], and you can help them achieve it by [Service]."
+  }},
+  "step_by_step_guides": [
+    {{ "title": "...", "steps": ["Step 1: ...", "Step 2: ...", "Step 3: ..."] }}
+  ]
 }}
 """
 
 def _validate_report(report: dict) -> Tuple[bool, List[str]]:
     errors = []
-    required_keys = ["summary", "scores", "visuals", "prioritized_actions", "roadmap", "outreach"]
+    required_keys = ["summary", "scores", "visuals", "prioritized_actions", "roadmap", "outreach", "social_insights", "step_by_step_guides"]
     for k in required_keys:
         if k not in report:
             errors.append(f"Missing root key: {k}")
