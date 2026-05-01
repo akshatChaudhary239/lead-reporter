@@ -165,7 +165,7 @@ export default function DiscoverPage() {
                   </div>
 
                   <h3 className="text-lg font-bold text-white mb-1 group-hover:text-purple-400 transition-colors">
-                    {lead.is_unlocked ? lead.business_name : '••••••••••••'}
+                    {lead.business_name}
                   </h3>
                   
                   <div className="flex items-center gap-2 text-slate-400 text-sm mb-4">
