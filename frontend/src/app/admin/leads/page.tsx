@@ -21,6 +21,7 @@ interface AdminLead {
   is_approved: boolean;
   teaser_insight: string;
   teaser_revenue_leak: string;
+  report_json?: any;
   error_message?: string;
   created_at: string;
 }
@@ -39,6 +40,9 @@ export default function AdminLeadsPage() {
 
   // Edit states
   const [editingLead, setEditingLead] = useState<AdminLead | null>(null);
+  const [editTab, setEditTab] = useState<'basic' | 'json'>('basic');
+  const [jsonInput, setJsonInput] = useState('');
+  const [jsonError, setJsonError] = useState<string | null>(null);
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -96,8 +100,10 @@ export default function AdminLeadsPage() {
       await api.patch(`/admin/leads/${id}`, data);
       setLeads(leads.map(l => l.id === id ? { ...l, ...data } : l));
       if (editingLead?.id === id) setEditingLead(null);
+      return true;
     } catch (err) {
       alert('Update failed');
+      return false;
     }
   };
 
@@ -130,11 +136,26 @@ export default function AdminLeadsPage() {
 
     try {
       setProcessing(true);
-      await api.post('/admin/leads/bulk', formData);
+      const token = localStorage.getItem('token');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+      
+      const response = await fetch(`${apiUrl}/admin/leads/bulk`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Upload failed with status ${response.status}`);
+      }
+
       alert('Bulk upload started!');
       fetchLeads();
-    } catch (err) {
-      alert('Upload failed');
+    } catch (err: any) {
+      alert('Upload failed: ' + err.message);
     } finally {
       setProcessing(false);
     }
@@ -318,12 +339,25 @@ export default function AdminLeadsPage() {
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
-                          onClick={() => setEditingLead(lead)}
+                          onClick={() => {
+                            setEditingLead(lead);
+                            setJsonInput(JSON.stringify(lead.report_json || {}, null, 2));
+                            setEditTab('basic');
+                          }}
                           className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 text-blue-400 transition-colors"
-                          title="Edit Teaser"
+                          title="Curate Audit"
                         >
                           <Edit2 size={16} />
                         </button>
+                        <a 
+                          href={`/dashboard/reports/${lead.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 text-emerald-400 transition-colors"
+                          title="View Live Report"
+                        >
+                          <ExternalLink size={16} />
+                        </a>
                         <button 
                           onClick={() => handleRefresh(lead.id)}
                           className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 text-amber-500 transition-colors"
@@ -371,67 +405,149 @@ export default function AdminLeadsPage() {
 
       {/* Edit Modal (Conditional) */}
       {editingLead && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-8 animate-in zoom-in-95 duration-200">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Edit2 className="text-blue-500" />
-              Refine Lead Curation
-            </h3>
-            
-            <div className="space-y-6">
-              <div>
-                <label className="text-xs font-black uppercase text-slate-500 mb-2 block tracking-widest">Teaser Headline / Name</label>
-                <input 
-                  type="text" 
-                  className="w-full bg-slate-800 border-none rounded-xl text-sm px-4 py-3 focus:ring-2 focus:ring-blue-500"
-                  defaultValue={editingLead.business_name}
-                  id="edit-name"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-black uppercase text-slate-500 mb-2 block tracking-widest">Main Insight / Hook</label>
-                <textarea 
-                  className="w-full bg-slate-800 border-none rounded-xl text-sm px-4 py-3 h-32 focus:ring-2 focus:ring-blue-500"
-                  defaultValue={editingLead.teaser_insight}
-                  id="edit-insight"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-black uppercase text-slate-500 mb-2 block tracking-widest">Opportunity Score</label>
-                  <select id="edit-score" className="w-full bg-slate-800 border-none rounded-xl text-sm px-4 py-3 focus:ring-2 focus:ring-blue-500" defaultValue={editingLead.opportunity_score}>
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-                  </select>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="bg-slate-800/50 p-6 border-b border-slate-700 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+                  <Edit2 size={20} />
                 </div>
                 <div>
-                  <label className="text-xs font-black uppercase text-slate-500 mb-2 block tracking-widest">Revenue Leak</label>
-                  <input id="edit-leak" type="text" className="w-full bg-slate-800 border-none rounded-xl text-sm px-4 py-3 focus:ring-2 focus:ring-blue-500" defaultValue={editingLead.teaser_revenue_leak} />
+                  <h3 className="font-bold text-lg">Curate Audit Intelligence</h3>
+                  <p className="text-xs text-slate-500">{editingLead.business_name} • {editingLead.website_url}</p>
                 </div>
+              </div>
+              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button 
+                  onClick={() => setEditTab('basic')}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${editTab === 'basic' ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  Basic Info
+                </button>
+                <button 
+                  onClick={() => setEditTab('json')}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${editTab === 'json' ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  Full Report JSON
+                </button>
               </div>
             </div>
+            
+            <div className="p-8 max-h-[70vh] overflow-y-auto">
+              {editTab === 'basic' ? (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-slate-500 mb-2 block tracking-widest">Business Name</label>
+                      <input 
+                        type="text" 
+                        className="w-full bg-slate-800 border-slate-700 rounded-xl text-sm px-4 py-3 focus:ring-2 focus:ring-blue-500"
+                        defaultValue={editingLead.business_name}
+                        id="edit-name"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-slate-500 mb-2 block tracking-widest">Category</label>
+                      <input 
+                        type="text" 
+                        className="w-full bg-slate-800 border-slate-700 rounded-xl text-sm px-4 py-3 focus:ring-2 focus:ring-blue-500"
+                        defaultValue={editingLead.category}
+                        id="edit-category"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-500 mb-2 block tracking-widest">Teaser Insight / Hook</label>
+                    <textarea 
+                      className="w-full bg-slate-800 border-slate-700 rounded-xl text-sm px-4 py-3 h-24 focus:ring-2 focus:ring-blue-500"
+                      defaultValue={editingLead.teaser_insight}
+                      id="edit-insight"
+                    />
+                  </div>
 
-            <div className="flex items-center gap-4 mt-8">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-slate-500 mb-2 block tracking-widest">Opportunity Score</label>
+                      <select id="edit-score" className="w-full bg-slate-800 border-slate-700 rounded-xl text-sm px-4 py-3 focus:ring-2 focus:ring-blue-500" defaultValue={editingLead.opportunity_score}>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-slate-500 mb-2 block tracking-widest">Revenue Leak Preview</label>
+                      <input id="edit-leak" type="text" className="w-full bg-slate-800 border-slate-700 rounded-xl text-sm px-4 py-3 focus:ring-2 focus:ring-blue-500" defaultValue={editingLead.teaser_revenue_leak} />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest block">Raw Report Data (JSON)</label>
+                    {jsonError && <span className="text-[10px] font-bold text-red-500">Invalid JSON: {jsonError}</span>}
+                  </div>
+                  <textarea 
+                    className={`w-full bg-slate-950 border ${jsonError ? 'border-red-500' : 'border-slate-800'} rounded-xl text-[12px] font-mono p-6 h-[400px] focus:ring-2 focus:ring-blue-500 outline-none`}
+                    value={jsonInput}
+                    onChange={(e) => {
+                      setJsonInput(e.target.value);
+                      try {
+                        JSON.parse(e.target.value);
+                        setJsonError(null);
+                      } catch (err: any) {
+                        setJsonError(err.message);
+                      }
+                    }}
+                    spellCheck={false}
+                  />
+                  <p className="text-[10px] text-slate-500 italic">
+                    Note: Editing this JSON directly changes the charts, roadmap, and scripts displayed to the user.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 bg-slate-800/30 border-t border-slate-800 flex items-center gap-4">
               <button 
-                onClick={() => {
-                  const data = {
-                    business_name: (document.getElementById('edit-name') as HTMLInputElement).value,
-                    teaser_insight: (document.getElementById('edit-insight') as HTMLTextAreaElement).value,
-                    opportunity_score: (document.getElementById('edit-score') as HTMLSelectElement).value,
-                    teaser_revenue_leak: (document.getElementById('edit-leak') as HTMLInputElement).value
-                  };
-                  handleUpdate(editingLead.id, data);
+                disabled={processing || (editTab === 'json' && !!jsonError)}
+                onClick={async () => {
+                  setProcessing(true);
+                  let data: any = {};
+                  
+                  if (editTab === 'basic') {
+                    data = {
+                      business_name: (document.getElementById('edit-name') as HTMLInputElement).value,
+                      category: (document.getElementById('edit-category') as HTMLInputElement).value,
+                      teaser_insight: (document.getElementById('edit-insight') as HTMLTextAreaElement).value,
+                      opportunity_score: (document.getElementById('edit-score') as HTMLSelectElement).value,
+                      teaser_revenue_leak: (document.getElementById('edit-leak') as HTMLInputElement).value
+                    };
+                  } else {
+                    try {
+                      data = { report_json: JSON.parse(jsonInput) };
+                    } catch (e) {
+                      setProcessing(false);
+                      return;
+                    }
+                  }
+                  
+                  const success = await handleUpdate(editingLead.id, data);
+                  setProcessing(false);
+                  if (success) setEditingLead(null);
                 }}
-                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all"
+                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                Save Refinement
+                {processing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle size={18} />}
+                {processing ? 'Saving Changes...' : 'Save Refinement'}
               </button>
               <button 
                 onClick={() => setEditingLead(null)}
                 className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold py-3 rounded-xl transition-all"
               >
-                Cancel
+                Discard Changes
               </button>
             </div>
           </div>
