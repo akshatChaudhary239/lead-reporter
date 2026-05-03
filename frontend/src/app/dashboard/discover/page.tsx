@@ -28,6 +28,8 @@ export default function DiscoverPage() {
   const [category, setCategory] = useState('');
   const [location, setLocation] = useState('');
   const [unlockingId, setUnlockingId] = useState<string | null>(null);
+  const [selectedLead, setSelectedLead] = useState<PublicLead | null>(null);
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -48,20 +50,28 @@ export default function DiscoverPage() {
     fetchLeads();
   }, [page, category, location]);
 
-  const handleUnlock = async (leadId: string) => {
-    if (confirm('Unlock this high-conviction lead for 1 credit?')) {
-      setUnlockingId(leadId);
-      try {
-        await api.post(`/discover/${leadId}/unlock`);
-        await refreshUser();
-        // Refresh local lead state
-        setLeads(leads.map(l => l.id === leadId ? { ...l, is_unlocked: true } : l));
-      } catch (err: any) {
-        alert(err.response?.data?.detail || 'Unlock failed');
-      } finally {
-        setUnlockingId(null);
-      }
+  const handleUnlockConfirm = async () => {
+    if (!selectedLead) return;
+    
+    setUnlockingId(selectedLead.id);
+    try {
+      await api.post(`/discover/${selectedLead.id}/unlock`);
+      await refreshUser();
+      // Refresh local lead state
+      setLeads(leads.map(l => l.id === selectedLead.id ? { ...l, is_unlocked: true } : l));
+      setShowUnlockModal(false);
+      setSelectedLead(null);
+    } catch (err: any) {
+      console.error('Unlock failed', err);
+      // We could add an inline error message in the modal here
+    } finally {
+      setUnlockingId(null);
     }
+  };
+
+  const openUnlockModal = (lead: PublicLead) => {
+    setSelectedLead(lead);
+    setShowUnlockModal(true);
   };
 
   return (
@@ -182,27 +192,20 @@ export default function DiscoverPage() {
                       Updated {new Date(lead.updated_at).toLocaleDateString()}
                     </div>
                     {lead.is_unlocked ? (
-                      <a 
-                        href={`/dashboard/discover/${lead.id}`} 
+                      <Link 
+                        href={`/dashboard/reports/${lead.id}`} 
                         className="flex items-center gap-2 text-purple-400 font-bold text-sm hover:text-purple-300 transition-colors"
                       >
                         View Intelligence
                         <Unlock className="w-4 h-4" />
-                      </a>
+                      </Link>
                     ) : (
                       <button 
-                        onClick={() => handleUnlock(lead.id)}
-                        disabled={unlockingId === lead.id}
+                        onClick={() => openUnlockModal(lead)}
                         className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
                       >
-                        {unlockingId === lead.id ? (
-                          <RefreshCw className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <>
-                            Unlock Report
-                            <Lock className="w-4 h-4" />
-                          </>
-                        )}
+                        Unlock Report
+                        <Lock className="w-4 h-4" />
                       </button>
                     )}
                   </div>
@@ -216,6 +219,64 @@ export default function DiscoverPage() {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Unlock Modal */}
+        {showUnlockModal && selectedLead && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowUnlockModal(false)} />
+            <div className="relative glass-card w-full max-w-md p-8 border border-amber-500/30 amber-glow-sm overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-amber-600" />
+              
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mb-6 border border-amber-500/20">
+                  <Lock className="text-amber-500" size={32} />
+                </div>
+                
+                <h2 className="text-2xl font-bold mb-2">Confirm Access</h2>
+                <p className="text-slate-400 text-sm mb-6">
+                  Unlock full intelligence and high-conviction audit reports for <span className="text-white font-bold">{selectedLead.business_name}</span>.
+                </p>
+                
+                <div className="w-full bg-slate-900/50 rounded-2xl p-6 border border-slate-800 mb-8">
+                  <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-800">
+                    <span className="text-sm text-slate-400">Unlock Cost</span>
+                    <span className="font-bold text-amber-500">1 Credit</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-400">Current Balance</span>
+                    <span className="font-bold">{user?.credits || 0} Credits</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-4 w-full">
+                  <button 
+                    onClick={() => setShowUnlockModal(false)}
+                    className="flex-1 px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-sm transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleUnlockConfirm}
+                    disabled={unlockingId === selectedLead.id || (user?.credits || 0) < 1}
+                    className="flex-1 px-4 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {unlockingId === selectedLead.id ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>Confirm Unlock <Zap size={16} /></>
+                    )}
+                  </button>
+                </div>
+                
+                {(user?.credits || 0) < 1 && (
+                  <p className="mt-4 text-xs text-red-400 font-bold">
+                    Insufficient credits. Please upgrade your plan.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -243,3 +304,4 @@ export default function DiscoverPage() {
     </DashboardLayout>
   );
 }
+

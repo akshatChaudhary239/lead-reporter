@@ -7,11 +7,11 @@ import { FileText, CheckCircle2, XCircle, Download, ExternalLink, Loader2, Searc
 import Link from 'next/link';
 import { useState } from 'react';
 
-interface Report {
+interface AccessedLead {
   id: string;
   business_name: string;
   website_url: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: string;
   created_at: string;
 }
 
@@ -22,7 +22,7 @@ export default function ReportsPage() {
     queryKey: ['reports'],
     queryFn: async () => {
       const res = await api.get('/reports/');
-      return res.data as Report[];
+      return res.data as AccessedLead[];
     },
   });
 
@@ -97,65 +97,62 @@ export default function ReportsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
-                  {filteredReports?.map((report) => (
-                    <tr key={report.id} className="hover:bg-white/5 transition-colors group">
+                  {filteredReports?.map((lead) => (
+                    <tr key={lead.id} className="hover:bg-white/5 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                            report.status === 'completed' ? 'bg-green-500/10 text-green-500' : 
-                            report.status === 'failed' ? 'bg-red-500/10 text-red-500' : 'bg-slate-800 text-slate-500'
+                            lead.status === 'completed' ? 'bg-green-500/10 text-green-500' : 
+                            lead.status === 'failed' ? 'bg-red-500/10 text-red-500' : 'bg-slate-800 text-slate-500'
                           }`}>
                             <FileText size={20} />
                           </div>
                           <div>
-                            <p className="font-bold text-sm">{report.business_name}</p>
-                            <p className="text-xs text-slate-500 truncate max-w-[250px]">{report.website_url}</p>
+                            <p className="font-bold text-sm">{lead.business_name}</p>
+                            <p className="text-xs text-slate-500 truncate max-w-[250px]">{lead.website_url}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${
-                            report.status === 'completed' ? 'bg-green-500' :
-                            report.status === 'processing' ? 'bg-amber-500 animate-pulse' :
-                            report.status === 'failed' ? 'bg-red-500' : 'bg-slate-500'
+                            lead.status === 'completed' ? 'bg-green-500' :
+                            lead.status === 'processing' ? 'bg-amber-500 animate-pulse' :
+                            lead.status === 'failed' ? 'bg-red-500' : 'bg-slate-500'
                           }`} />
                           <span className={`text-xs font-bold uppercase tracking-wide ${
-                            report.status === 'completed' ? 'text-green-500' :
-                            report.status === 'processing' ? 'text-amber-500' :
-                            report.status === 'failed' ? 'text-red-500' : 'text-slate-500'
+                            lead.status === 'completed' ? 'text-green-500' :
+                            lead.status === 'processing' ? 'text-amber-500' :
+                            lead.status === 'failed' ? 'text-red-500' : 'text-slate-500'
                           }`}>
-                            {report.status}
+                            {lead.status}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-400">
-                        {new Date(report.created_at).toLocaleDateString(undefined, { 
+                        {new Date(lead.created_at).toLocaleDateString(undefined, { 
                           year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
                         })}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          {report.status === 'completed' && (
+                          {lead.status === 'completed' && (
                             <>
                               <button 
-                                onClick={() => handleDownload(report.id, report.business_name)}
+                                onClick={() => handleDownload(lead.id, lead.business_name)}
                                 className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 text-amber-500 transition-colors"
                                 title="Download PDF"
                               >
                                 <Download size={18} />
                               </button>
                               <Link 
-                                href={`/dashboard/reports/${report.id}`}
+                                href={`/dashboard/reports/${lead.id}`}
                                 className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 text-blue-400 transition-colors"
                                 title="View Details"
                               >
                                 <ExternalLink size={18} />
                               </Link>
                             </>
-                          )}
-                          {report.status === 'failed' && (
-                            <button className="text-xs font-bold text-red-500 hover:underline">Retry Audit</button>
                           )}
                         </div>
                       </td>

@@ -11,11 +11,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Suspense } from 'react';
 
-interface Report {
+interface AccessedLead {
   id: string;
   business_name: string;
   website_url: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: string;
   created_at: string;
 }
 
@@ -46,7 +46,7 @@ function DashboardContent() {
     queryKey: ['reports'],
     queryFn: async () => {
       const res = await api.get('/reports/');
-      return res.data as Report[];
+      return res.data as AccessedLead[];
     },
     refetchInterval: 10000, // Poll every 10s
   });
@@ -105,44 +105,44 @@ function DashboardContent() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
-                  {reports?.map((report) => (
-                    <tr key={report.id} className="hover:bg-white/5 transition-colors group">
+                  {reports?.map((lead) => (
+                    <tr key={lead.id} className="hover:bg-white/5 transition-colors group">
                       <td className="px-6 py-4">
                         <div>
-                          <p className="font-bold text-sm">{report.business_name}</p>
-                          <p className="text-xs text-slate-500 truncate max-w-[200px]">{report.website_url}</p>
+                          <p className="font-bold text-sm">{lead.business_name}</p>
+                          <p className="text-xs text-slate-500 truncate max-w-[200px]">{lead.website_url}</p>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          {report.status === 'completed' && <CheckCircle2 className="text-green-500" size={16} />}
-                          {report.status === 'processing' && <Loader2 className="text-amber-500 animate-spin" size={16} />}
-                          {report.status === 'failed' && <XCircle className="text-red-500" size={16} />}
-                          {report.status === 'pending' && <Clock className="text-slate-500" size={16} />}
+                          {lead.status === 'completed' && <CheckCircle2 className="text-green-500" size={16} />}
+                          {lead.status === 'processing' && <Loader2 className="text-amber-500 animate-spin" size={16} />}
+                          {lead.status === 'failed' && <XCircle className="text-red-500" size={16} />}
+                          {lead.status === 'pending' && <Clock className="text-slate-500" size={16} />}
                           <span className={`text-xs font-bold uppercase tracking-wide ${
-                            report.status === 'completed' ? 'text-green-500' :
-                            report.status === 'processing' ? 'text-amber-500' :
-                            report.status === 'failed' ? 'text-red-500' : 'text-slate-500'
+                            lead.status === 'completed' ? 'text-green-500' :
+                            lead.status === 'processing' ? 'text-amber-500' :
+                            lead.status === 'failed' ? 'text-red-500' : 'text-slate-500'
                           }`}>
-                            {report.status}
+                            {lead.status}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-400">
-                        {new Date(report.created_at).toLocaleDateString()}
+                        {new Date(lead.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {report.status === 'completed' && (
+                          {lead.status === 'completed' && (
                             <>
                               <button 
                                 onClick={async () => {
                                   try {
-                                    const res = await api.get(`/reports/${report.id}/pdf`, { responseType: 'blob' });
+                                    const res = await api.get(`/reports/${lead.id}/pdf`, { responseType: 'blob' });
                                     const url = window.URL.createObjectURL(new Blob([res.data]));
                                     const link = document.createElement('a');
                                     link.href = url;
-                                    link.setAttribute('download', `${report.business_name}_Audit.pdf`);
+                                    link.setAttribute('download', `${lead.business_name}_Audit.pdf`);
                                     document.body.appendChild(link);
                                     link.click();
                                     link.remove();
@@ -156,7 +156,7 @@ function DashboardContent() {
                                 <Download size={18} />
                               </button>
                               <Link 
-                                href={`/dashboard/reports/${report.id}`}
+                                href={`/dashboard/reports/${lead.id}`}
                                 className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 text-blue-400 transition-colors"
                                 title="View Details"
                               >
