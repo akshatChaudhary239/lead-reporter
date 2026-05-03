@@ -100,6 +100,9 @@ async def create_report(
     
     return {"report_id": str(new_report.id), "status": "pending"}
 
+from ..models.public_lead import PublicLead
+from ..models.lead_unlock import LeadUnlock
+
 @router.get("/", response_model=List[ReportSummary])
 async def list_reports(
     current_user: User = Depends(get_current_user),
@@ -107,23 +110,25 @@ async def list_reports(
     limit: int = 20,
     offset: int = 0
 ):
+    # Query PublicLeads that have been unlocked by this user
     result = await db.execute(
-        select(Report)
-        .where(Report.user_id == current_user.id)
-        .order_by(desc(Report.created_at))
+        select(PublicLead)
+        .join(LeadUnlock, LeadUnlock.lead_id == PublicLead.id)
+        .where(LeadUnlock.user_id == current_user.id)
+        .order_by(desc(LeadUnlock.unlocked_at))
         .limit(limit)
         .offset(offset)
     )
-    reports = result.scalars().all()
+    leads = result.scalars().all()
     return [
         {
-            "id": r.id,
-            "business_name": r.business_name,
-            "website_url": r.website_url,
-            "status": r.status,
-            "created_at": r.created_at.isoformat()
+            "id": l.id,
+            "business_name": l.business_name,
+            "website_url": l.website_url,
+            "status": l.status,
+            "created_at": l.created_at.isoformat()
         }
-        for r in reports
+        for l in leads
     ]
 
 @router.get("/{report_id}", response_model=ReportDetail)
@@ -132,22 +137,25 @@ async def get_report(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    # Ensure the lead is unlocked by this user
     result = await db.execute(
-        select(Report).where(Report.id == report_id, Report.user_id == current_user.id)
+        select(PublicLead)
+        .join(LeadUnlock, LeadUnlock.lead_id == PublicLead.id)
+        .where(PublicLead.id == report_id, LeadUnlock.user_id == current_user.id)
     )
-    report = result.scalar_one_or_none()
+    lead = result.scalar_one_or_none()
     
-    if not report:
-        raise HTTPException(status_code=404, detail="Report not found")
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead intelligence not found or not unlocked")
         
     return {
-        "id": report.id,
-        "business_name": report.business_name,
-        "website_url": report.website_url,
-        "status": report.status,
-        "created_at": report.created_at.isoformat(),
-        "report_json": report.report_json,
-        "error_message": report.error_message
+        "id": lead.id,
+        "business_name": lead.business_name,
+        "website_url": lead.website_url,
+        "status": lead.status,
+        "created_at": lead.created_at.isoformat(),
+        "report_json": lead.report_json,
+        "error_message": None
     }
 
 @router.get("/{report_id}/pdf")
@@ -156,27 +164,30 @@ async def get_report_pdf(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    # Ensure the lead is unlocked by this user
     result = await db.execute(
-        select(Report).where(Report.id == report_id, Report.user_id == current_user.id)
+        select(PublicLead)
+        .join(LeadUnlock, LeadUnlock.lead_id == PublicLead.id)
+        .where(PublicLead.id == report_id, LeadUnlock.user_id == current_user.id)
     )
-    report = result.scalar_one_or_none()
+    lead = result.scalar_one_or_none()
     
-    if not report:
-        raise HTTPException(status_code=404, detail="Report not found")
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead intelligence not found or not unlocked")
         
-    if report.status != "completed":
-        raise HTTPException(status_code=400, detail="Report is not ready yet")
+    if lead.status != "completed":
+        raise HTTPException(status_code=400, detail="Intelligence report is not ready yet")
         
     pdf_filename = f"{report_id}.pdf"
     pdf_dir = os.path.abspath(os.path.join(os.getcwd(), "reports"))
     pdf_path = os.path.join(pdf_dir, pdf_filename)
     
     if not os.path.exists(pdf_path):
-        # Self-healing: Regenerate PDF if it's missing from disk but report exists in DB
+        # Self-healing: Regenerate PDF if it's missing from disk but lead exists in DB
         from ..services.pdf_generator import generate_pdf
         try:
             os.makedirs(pdf_dir, exist_ok=True)
-            pdf_bytes = await generate_pdf(report.report_json, report.business_name)
+            pdf_bytes = await generate_pdf(lead.report_json, lead.business_name)
             with open(pdf_path, "wb") as f:
                 f.write(pdf_bytes)
         except Exception as e:
@@ -185,5 +196,5 @@ async def get_report_pdf(
     return FileResponse(
         pdf_path, 
         media_type="application/pdf", 
-        filename=f"{report.business_name}_Audit.pdf"
+        filename=f"{lead.business_name}_Audit.pdf"
     )

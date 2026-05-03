@@ -52,8 +52,8 @@ export default function ReportsPage() {
         {/* Header & Search */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-800/20 p-6 rounded-2xl border border-slate-800">
           <div>
-            <h1 className="text-2xl font-bold mb-1">Your Audit Arsenal</h1>
-            <p className="text-sm text-slate-400">Manage and track all your target intelligence.</p>
+            <h1 className="text-2xl font-bold mb-1">Your Intelligence Vault</h1>
+            <p className="text-sm text-slate-400">Review and manage your unlocked business intelligence.</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -82,17 +82,17 @@ export default function ReportsPage() {
           ) : filteredReports?.length === 0 ? (
             <div className="p-20 flex flex-col items-center justify-center text-slate-500 text-center">
               <Search className="mb-4 opacity-20" size={48} />
-              <p className="mb-2 font-bold">No matches found</p>
-              <p className="text-sm">Try adjusting your search or create a new audit.</p>
+              <p className="mb-2 font-bold">No intelligence found</p>
+              <p className="text-sm">Explore the Opportunities page to unlock your first high-conviction lead.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-slate-800/30 text-xs text-slate-500 uppercase tracking-wider">
                   <tr>
-                    <th className="px-6 py-4 font-bold">Target Business</th>
+                    <th className="px-6 py-4 font-bold">Business Asset</th>
                     <th className="px-6 py-4 font-bold">Status</th>
-                    <th className="px-6 py-4 font-bold">Date Generated</th>
+                    <th className="px-6 py-4 font-bold">Accessed On</th>
                     <th className="px-6 py-4 font-bold text-right">Actions</th>
                   </tr>
                 </thead>

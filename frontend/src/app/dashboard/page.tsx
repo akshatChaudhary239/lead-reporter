@@ -3,7 +3,7 @@
 import DashboardLayout from '@/components/DashboardLayout';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { FileText, Clock, CheckCircle2, XCircle, Download, ExternalLink, Loader2 } from 'lucide-react';
+import { FileText, Clock, CheckCircle2, XCircle, Download, ExternalLink, Loader2, Target } from 'lucide-react';
 import Link from 'next/link';
 
 import { useEffect } from 'react';
@@ -52,9 +52,9 @@ function DashboardContent() {
   });
 
   const stats = [
-    { name: 'Total Audits', value: reports?.length || 0, icon: FileText, color: 'text-blue-500' },
-    { name: 'Completed', value: reports?.filter(r => r.status === 'completed').length || 0, icon: CheckCircle2, color: 'text-green-500' },
-    { name: 'Processing', value: reports?.filter(r => r.status === 'processing').length || 0, icon: Loader2, color: 'text-amber-500' },
+    { name: 'Leads Accessed', value: reports?.length || 0, icon: FileText, color: 'text-blue-500' },
+    { name: 'High-Conviction', value: reports?.filter(r => r.status === 'completed').length || 0, icon: CheckCircle2, color: 'text-green-500' },
+    { name: 'Intelligence Assets', value: reports?.length || 0, icon: Target, color: 'text-amber-500' },
   ];
 
   return (
@@ -65,7 +65,7 @@ function DashboardContent() {
           {stats.map((stat) => (
             <div key={stat.name} className="glass-card p-6 flex items-center gap-6">
               <div className={`w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center ${stat.color}`}>
-                <stat.icon size={28} className={stat.name === 'Processing' ? 'animate-spin' : ''} />
+                <stat.icon size={28} />
               </div>
               <div>
                 <p className="text-sm text-slate-400 font-medium">{stat.name}</p>
@@ -78,8 +78,8 @@ function DashboardContent() {
         {/* Reports Table */}
         <div className="glass-card overflow-hidden">
           <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-            <h3 className="text-lg font-bold">Recent Audits</h3>
-            <button className="text-sm text-amber-500 font-medium hover:underline">View All</button>
+            <h3 className="text-lg font-bold">Recent Intelligence Assets</h3>
+            <Link href="/dashboard/reports" className="text-sm text-amber-500 font-medium hover:underline">View All</Link>
           </div>
           
           {isLoading ? (
@@ -100,7 +100,7 @@ function DashboardContent() {
                   <tr>
                     <th className="px-6 py-4 font-bold">Business</th>
                     <th className="px-6 py-4 font-bold">Status</th>
-                    <th className="px-6 py-4 font-bold">Created</th>
+                    <th className="px-6 py-4 font-bold">Accessed</th>
                     <th className="px-6 py-4 font-bold text-right">Actions</th>
                   </tr>
                 </thead>
