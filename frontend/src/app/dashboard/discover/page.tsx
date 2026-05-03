@@ -5,6 +5,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { Search, MapPin, Target, Zap, Lock, Unlock, RefreshCw, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import Link from 'next/link';
 
 interface PublicLead {
   id: string;
