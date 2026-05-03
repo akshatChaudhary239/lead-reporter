@@ -117,9 +117,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <h2 className="text-xl font-bold">
             {navItems.find(i => i.href === pathname)?.name || 'Dashboard'}
           </h2>
-          <Link href="/dashboard/new" className="btn-premium py-2 text-sm px-4">
-            New Audit
-          </Link>
         </header>
         <div className="flex-1 overflow-auto p-8">
           {children}

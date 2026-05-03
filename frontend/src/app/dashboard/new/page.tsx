@@ -6,8 +6,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Target, ArrowRight, Loader2, Info, CheckCircle2, Globe, Search, BrainCircuit } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 export default function NewAuditPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     business_name: '',
@@ -15,9 +18,13 @@ export default function NewAuditPage() {
     business_type: '',
     location_hint: '',
   });
-  const [loading, setLoading] = useState(false);
+  const [loading_submit, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const router = useRouter();
+
+  if (!loading && !user?.is_admin) {
+    router.replace('/dashboard');
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,10 +163,10 @@ export default function NewAuditPage() {
                     </button>
                     <button 
                       type="submit"
-                      disabled={loading}
+                      disabled={loading_submit}
                       className="btn-premium flex items-center gap-3"
                     >
-                      {loading ? (
+                      {loading_submit ? (
                         <Loader2 className="animate-spin" />
                       ) : (
                         <>Initialize Audit <Target size={18} /></>

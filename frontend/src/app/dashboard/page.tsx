@@ -90,8 +90,8 @@ function DashboardContent() {
           ) : reports?.length === 0 ? (
             <div className="p-20 flex flex-col items-center justify-center text-slate-500">
               <FileText className="mb-4 opacity-20" size={48} />
-              <p className="mb-6">You haven&apos;t generated any audits yet.</p>
-              <Link href="/dashboard/new" className="btn-premium py-2 text-sm">Create Your First Audit</Link>
+              <p className="mb-6">Unlock high-conviction leads from the Opportunities page to see them here.</p>
+              <Link href="/dashboard/discover" className="btn-premium py-2 text-sm">Discover Opportunities</Link>
             </div>
           ) : (
             <div className="overflow-x-auto">
