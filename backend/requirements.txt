@@ -14,6 +14,6 @@ structlog
 slowapi
 xhtml2pdf
 jinja2
-stripe
 redis
 email-validator
+razorpay
