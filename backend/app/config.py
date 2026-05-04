@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     STRIPE_PRICE_GROWTH_USD: str = ""
     STRIPE_PRICE_PRO_USD: str = ""
 
+    # Razorpay
+    RAZORPAY_KEY_ID: str = ""
+    RAZORPAY_KEY_SECRET: str = ""
+    RAZORPAY_WEBHOOK_SECRET: str = ""
+
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
 

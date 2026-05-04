@@ -61,7 +61,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <div className="p-4 border-t border-slate-800">
           <div className="bg-slate-800/50 p-4 rounded-2xl mb-4">
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center">
                 <User size={20} />
               </div>
@@ -70,35 +70,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <p className="text-xs text-slate-500 truncate">{user.email}</p>
               </div>
             </div>
-            <div className="text-[10px] uppercase font-bold tracking-wider text-amber-500 mb-1 flex justify-between">
-              <span>Plan: {user.plan}</span>
-              {user.plan === 'pro' && <span>{user.reports_this_month}/500 mo</span>}
-              {user.plan === 'growth' && <span>{user.reports_this_month}/100 mo</span>}
-              {user.plan === 'free' && <span>{user.free_reports_used}/3 free</span>}
-            </div>
-            <div className="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden mb-3">
-              <div 
-                className="bg-amber-500 h-full transition-all duration-1000" 
-                style={{ width: `${
-                  user.plan === 'free' ? (user.free_reports_used / 3) * 100 :
-                  user.plan === 'growth' ? (user.reports_this_month / 100) * 100 :
-                  user.plan === 'pro' ? (user.reports_this_month / 500) * 100 : 0
-                }%` }}
-              />
-            </div>
-            {user.reports_purchased > 0 && (
-              <div className="text-[9px] text-slate-500 uppercase font-bold mb-1">
-                + {user.reports_purchased} Bonus Reports
+            
+            <div className="space-y-3 mb-4">
+              <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider">
+                <span className="text-slate-400">Tactical Assets</span>
+                <span className="text-amber-500">{user.reports_purchased + (3 - user.free_reports_used)}</span>
               </div>
-            )}
-            <div className="text-[9px] text-purple-500 uppercase font-bold mb-2">
-              + {user.credits} Discovery Credits
+              <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider">
+                <span className="text-slate-400">Discovery Credits</span>
+                <span className="text-purple-500">{user.credits}</span>
+              </div>
             </div>
+
             <Link 
               href="/pricing" 
-              className="block text-center text-[10px] font-bold uppercase tracking-widest py-2 bg-amber-500/10 text-amber-500 rounded-lg hover:bg-amber-500/20 transition-all border border-amber-500/20"
+              className="block text-center text-[10px] font-bold uppercase tracking-widest py-3 bg-amber-500 text-slate-900 rounded-xl hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/10"
             >
-              Upgrade Weaponry
+              Buy More Credits
             </Link>
           </div>
           <button 
