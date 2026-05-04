@@ -14,15 +14,6 @@ class Settings(BaseSettings):
     OPENROUTER_API_KEY: str = ""
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
 
-    # Stripe
-    STRIPE_SECRET_KEY: str = ""
-    STRIPE_WEBHOOK_SECRET: str = ""
-    STRIPE_PRICE_STARTER_INR: str = ""
-    STRIPE_PRICE_GROWTH_INR: str = ""
-    STRIPE_PRICE_PRO_INR: str = ""
-    STRIPE_PRICE_STARTER_USD: str = ""
-    STRIPE_PRICE_GROWTH_USD: str = ""
-    STRIPE_PRICE_PRO_USD: str = ""
 
     # Razorpay
     RAZORPAY_KEY_ID: str = ""

@@ -1,4 +1,3 @@
-import stripe
 import razorpay
 import hmac
 import hashlib
@@ -20,12 +19,7 @@ from ..services.billing_service import BillingService
 router = APIRouter(prefix="/billing", tags=["billing"])
 
 # Initialize clients
-stripe.api_key = settings.STRIPE_SECRET_KEY
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-
-class CheckoutRequest(BaseModel):
-    plan_id: str # starter, growth, pro
-    currency: str # inr, usd
 
 class RazorpayOrderRequest(BaseModel):
     plan_id: str
@@ -189,93 +183,3 @@ async def razorpay_webhook(
                 return {"status": "ok"}
     
     return {"status": "ignored"}
-
-# --- STRIPE ENDPOINTS (REFACTORED) ---
-
-@router.post("/checkout")
-async def create_checkout_session(
-    req: CheckoutRequest,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    # (Existing Stripe mapping logic...)
-    # I'll keep this simplified for now as requested
-    price_id = settings.STRIPE_PRICE_STARTER_INR if req.currency.lower() == "inr" else settings.STRIPE_PRICE_STARTER_USD
-    
-    try:
-        session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            line_items=[{"price": price_id, "quantity": 1}],
-            mode="payment",
-            success_url=f"{settings.FRONTEND_URL}/dashboard?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{settings.FRONTEND_URL}/pricing",
-            metadata={
-                "user_id": str(current_user.id),
-                "plan_id": req.plan_id
-            }
-        )
-        # Log the session creation
-        new_log = PaymentLog(
-            user_id=current_user.id,
-            order_id=session.id,
-            status="created",
-            plan_id=req.plan_id,
-            amount=session.amount_total,
-            currency=session.currency
-        )
-        db.add(new_log)
-        await db.commit()
-        
-        return {"url": session.url}
-    except Exception as e:
-        logger.error("stripe_checkout_failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Failed to create checkout session")
-
-@router.get("/verify-session/{session_id}")
-async def verify_session(
-    session_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    try:
-        session = stripe.checkout.Session.retrieve(session_id)
-        if session.payment_status == "paid":
-            # Check if fulfilled in log
-            result = await db.execute(select(PaymentLog).where(PaymentLog.order_id == session_id))
-            log = result.scalar_one_or_none()
-            if log and log.status == "captured":
-                return {"status": "success"}
-        return {"status": "pending"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Verification failed")
-
-@router.post("/webhook")
-async def stripe_webhook(
-    request: Request,
-    stripe_signature: str = Header(None),
-    db: AsyncSession = Depends(get_db)
-):
-    payload = await request.body()
-    try:
-        event = stripe.Webhook.construct_event(
-            payload, stripe_signature, settings.STRIPE_WEBHOOK_SECRET
-        )
-    except Exception as e:
-        return {"error": str(e)}
-
-    if event["type"] == "checkout.session.completed":
-        session = event["data"]["object"]
-        user_id = session["metadata"].get("user_id")
-        plan_id = session["metadata"].get("plan_id")
-        
-        if user_id:
-            await BillingService.fulfill_order(
-                db, 
-                session.id, 
-                session.payment_intent, 
-                user_id, 
-                plan_id, 
-                session.amount_total, 
-                session.currency
-            )
-
-    return {"status": "success"}
