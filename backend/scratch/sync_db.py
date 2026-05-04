@@ -11,8 +11,9 @@ from app.models.usage import UsageEvent, Payment
 async def init_models():
     print("Syncing database models...")
     async with engine.begin() as conn:
-        # For development, we drop and recreate to ensure schema changes apply
-        await conn.run_sync(Base.metadata.drop_all)
+        # For development, we usually just use create_all. 
+        # WARNING: drop_all deletes all data!
+        # await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     print("Database sync complete.")
 
